@@ -94,18 +94,7 @@
 					}
 				});
 
-				const football = styleField.football;
-				if (football && football !== 'none' && styleField.styled === 'true') {
-					const parent = node.parentNode;
-					if (parent && !parent.querySelector('.button-football')) {
-						const footballBtn = document.createElement('a');
-						footballBtn.className = "button button-football";
-						footballBtn.href = `https://www.sport-express.ru/football/${football}/`;
-						footballBtn.target = "_blank";
-						footballBtn.textContent = "Футбол";
-						parent.appendChild(footballBtn);
-					}
-				}
+
 			}
 		});
 	}

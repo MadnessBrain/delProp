@@ -13,7 +13,6 @@ chrome.runtime.onInstalled.addListener(() => {
 			styleField: {
 				styled: 'false',
 				filter: 'none',
-				football: 'none',
 				rndImg: 'off',
 				semen: 'off',
 				snow: 'off',

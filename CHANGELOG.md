@@ -2,6 +2,12 @@
 
 All notable changes to the **delProp** extension will be documented in this file.
 
+## [1.0.2] - 2026-06-26
+### Changed
+- Fixed news deletion bug: news list in storage (`newsId`) now accumulates instead of overwriting, preventing standard news items from being unblocked/re-appearing when all news (standard + custom) are blocked.
+- Fixed race condition check in news cleaner to retry check up to 250ms if class or attribute is not initialized yet.
+- Removed football button / Sport-Express configurations from default settings in `background.js` completely.
+
 ## [1.0.1] - 2026-06-26
 ### Added
 - Created `headerEnabled` setting in popup to allow turning the glassmorphic header bar on/off separately from the timer.

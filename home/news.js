@@ -20,15 +20,13 @@
 		const dellNewsField = window.delProp.settings?.dellNewsField || {};
 		let customNewsList = [];
 
-		// Fetch custom news from db.json if news removal is enabled
-		if (dellNewsField.news === 'true') {
-			fetch(chrome.runtime.getURL('db/db.json'))
-				.then(r => r.json())
-				.then(data => {
-					customNewsList = data.custom_news || [];
-				})
-				.catch(err => console.error("delProp: Error loading custom news:", err));
-		}
+		// Fetch custom news from db.json
+		fetch(chrome.runtime.getURL('db/db.json'))
+			.then(r => r.json())
+			.then(data => {
+				customNewsList = data.custom_news || [];
+			})
+			.catch(err => console.error("delProp: Error loading custom news:", err));
 		
 		if (window.delProp.settings?.styleField?.semen === 'on') {
 			setTimeout(applySemenStyle, 300);
@@ -40,42 +38,62 @@
 			name: 'newsCleaner',
 			check: (node) => node && node.classList && node.classList.contains('dhx_list_item'),
 			callback: (node) => {
-				if (node.className.includes('dhx_list_news_item_selected')) {
-					node.className = node.className.split('_selected')[0];
-				}
-				
-				if (node.className.includes('dhx_list_news_item')) {
+				let retries = 0;
+				const maxRetries = 25; // 250ms total
+
+				function checkAndClean() {
+					if (!node.parentNode) return; // Already removed or detached
+
+					if (node.className.includes('dhx_list_news_item_selected')) {
+						node.className = node.className.split('_selected')[0];
+					}
+
+					const isNews = node.className.includes('dhx_list_news_item');
+					const id = node.getAttribute("dhx_f_id");
+
+					// Defer if class or attribute is not set yet
+					if ((!isNews || !id) && retries < maxRetries) {
+						retries++;
+						setTimeout(checkAndClean, 10);
+						return;
+					}
+
+					// Exit if it's not a news item or lacks ID
+					if (!isNews || !id) {
+						return;
+					}
+
 					const parent = node.parentNode;
 					if (parent) {
-						// Collect all news item IDs, including custom news items, so they appear in the popup checklist
+						// Collect IDs currently in the DOM
 						const items = parent.querySelectorAll('.dhx_list_item');
 						const newIds = Array.from(items)
 							.map(el => el.getAttribute("dhx_f_id"))
 							.filter(Boolean);
 						
+						const customIds = customNewsList.map(item => item.id);
 						chrome.storage.local.get('newsId', ({newsId}) => {
-							if (!newsId || (JSON.stringify(newsId) !== JSON.stringify(newIds) && newsId.length <= newIds.length)) {
-								chrome.storage.local.set({newsId: newIds});
+							const currentIds = Array.isArray(newsId) ? newsId : [];
+							const merged = Array.from(new Set([...currentIds, ...newIds, ...customIds]));
+							if (JSON.stringify(currentIds) !== JSON.stringify(merged)) {
+								chrome.storage.local.set({newsId: merged});
 							}
 						});
 					}
 
 					if (dellNewsField.news === 'true') {
-						const id = node.getAttribute("dhx_f_id");
 						const selectedNews = Array.isArray(dellNewsField.newsList)
 							? dellNewsField.newsList
 							: (dellNewsField.newsList ? [dellNewsField.newsList] : []);
 
-						// Delete if checked by the user
 						if (selectedNews.includes(id)) {
 							node.remove();
 						}
 
-						// Inject custom news that are not blocked by the user and not already in the DOM
+						// Inject custom news
 						if (parent && customNewsList.length > 0) {
 							customNewsList.forEach(item => {
 								if (selectedNews.includes(item.id)) {
-									// Ensure we remove it if the user just blocked/deleted it
 									const existing = parent.querySelector(`[dhx_f_id="${item.id}"]`);
 									if (existing) existing.remove();
 									return;
@@ -102,8 +120,10 @@
 							});
 						}
 					}
+					applySemenStyle();
 				}
-				applySemenStyle();
+
+				checkAndClean();
 			}
 		});
 	}
