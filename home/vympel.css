@@ -122,3 +122,18 @@ embed {
 	right: 0;
 	margin: 0 auto;
 }
+
+/* Отмена инверсии цвета для медиа-элементов при включенном режиме Blackout (invert) */
+body.delprop-inverted img,
+body.delprop-inverted video,
+body.delprop-inverted iframe,
+body.delprop-inverted canvas,
+body.delprop-inverted [style*="background-image"],
+body.delprop-inverted .card_content img {
+    filter: invert(1);
+}
+
+/* Режим "Город Грехов" (grayscale) без влияния на картинки и видео */
+body.delprop-grayscaled :not(img, video, iframe, canvas, [style*="background-image"], :has(img, video, iframe, canvas, [style*="background-image"])) {
+    filter: grayscale(1);
+}

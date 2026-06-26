@@ -75,7 +75,15 @@
 	function initSiteFilters() {
 		const styleField = window.delProp.settings?.styleField || {};
 		if (styleField.styled === 'true' && styleField.filter && styleField.filter !== 'none') {
-			document.body.style.filter = styleField.filter;
+			const filterVal = styleField.filter;
+			if (filterVal === 'grayscale(1)') {
+				document.body.classList.add('delprop-grayscaled');
+			} else if (filterVal === 'invert(1)') {
+				document.body.style.filter = 'invert(1)';
+				document.body.classList.add('delprop-inverted');
+			} else {
+				document.body.style.filter = filterVal;
+			}
 		}
 	}
 
