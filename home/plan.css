@@ -1,0 +1,14 @@
+﻿div.gridbox_material.gridbox table.obj.row20px tr td i {
+    display: flex;
+    flex-direction: column;
+    margin: 5px 0;
+}
+
+div.gridbox_material.gridbox table.obj.row20px tr td {
+    height: auto !important;
+    line-height: initial !important;
+}
+
+td {
+    white-space: unset !important;
+}

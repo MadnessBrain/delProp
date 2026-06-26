@@ -1,0 +1,105 @@
+.dhx_combo_select {
+	overflow: auto !important;
+	scroll-behavior: smooth !important;
+}
+
+.dhx_combo_select::-webkit-scrollbar-thumb {
+   	background-color: black !important;
+}
+.dhx_combo_select::-webkit-scrollbar {
+   	width: 8px !important;
+}
+
+div.gridbox table.row20px tr td {
+    white-space: pre-wrap !important;
+}
+
+/*
+.dhxform_txt_label2 {
+	width: auto !important;
+}
+*/
+
+/* Flex container for the tree panel to allow sticky search bar */
+.dhx_cell_cont_layout {
+	display: flex !important;
+	flex-direction: column !important;
+}
+.dhxtree_dhx_skyblue {
+	display: flex !important;
+	flex-direction: column !important;
+	height: 100% !important;
+	box-sizing: border-box;
+}
+
+/* Scrollable tree wrapper */
+.dhxtree_dhx_skyblue > .containerTableStyle {
+	flex: 1 !important;
+	height: 0 !important;
+	overflow: auto !important;
+}
+
+/* Search bar styling */
+.delprop-search-container {
+	display: flex;
+	gap: 6px;
+	padding: 6px;
+	background-color: #e2f0ff; /* Light skyblue matching layout headers */
+	border-bottom: 1px solid #a4bed4; /* Border matching skyblue grid line */
+	box-sizing: border-box;
+	align-items: center;
+}
+
+.delprop-search-input {
+	flex: 1;
+	padding: 4px 8px;
+	font-size: 12px;
+	font-family: inherit;
+	border: 1px solid #a4bed4;
+	border-radius: 3px;
+	box-sizing: border-box;
+	outline: none;
+}
+
+.delprop-search-input:focus {
+	border-color: #3b82f6;
+	box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
+}
+
+/* Pin Toggle Button */
+.delprop-pin-toggle {
+	padding: 3px 6px;
+	font-size: 12px;
+	border: 1px solid #a4bed4;
+	background-color: #fff;
+	border-radius: 3px;
+	cursor: pointer;
+	outline: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	user-select: none;
+}
+
+.delprop-pin-toggle:hover {
+	background-color: #f0f7ff;
+}
+
+.delprop-pin-toggle.active {
+	background-color: #a4bed4;
+	border-color: #7b9eb8;
+}
+
+/* Pinned Node Highlight */
+.delprop-row-pinned span.standartTreeRow {
+	font-weight: bold !important;
+	color: #1e3a8a !important;
+}
+
+.delprop-row-pinned {
+	background-color: #f0fdf4 !important; /* Soft light-green background */
+}
+
+
+
+

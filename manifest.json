@@ -1,0 +1,76 @@
+{
+  "manifest_version": 3,
+  "name": "delProp",
+  "description": "Улучшайзер",
+  "version": "1.0.0",
+  "author": "R&L",
+  "content_scripts": [
+    {
+      "matches": [
+        "http://pcserv.vympel/*",
+        "https://r-and-l.ru/*"
+      ],
+      "js": [
+        "home/core.js",
+        "home/news.js",
+        "home/sidebar.js",
+        "home/misc.js",
+        "home/header.js",
+        "home/pivo.js"
+      ],
+      "css": [
+        "home/vympel.css",
+        "home/rndimg.css",
+        "home/header.css"
+      ],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "http://archive.vympel/*"
+      ],
+      "js": [
+        "archive/saveAddres.js"
+      ],
+      "css": [
+        "archive/archive.css"
+      ]
+    },
+    {
+      "matches": [
+        "http://pcserv.vympel/timesheet/plan.html"
+      ],
+      "css": [
+        "home/plan.css"
+      ]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "delProp"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "img/zhir.png",
+        "patch/patch.js",
+        "db/db.json",
+        "home/pivo.css",
+        "home/header.css",
+        "patch/network_spy.js"
+      ],
+      "matches": [
+        "http://pcserv.vympel/*",
+        "http://archive.vympel/*"
+      ]
+    }
+  ]
+}

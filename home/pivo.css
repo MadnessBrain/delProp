@@ -1,0 +1,249 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+/* ==============================
+   Общий контейнер
+   ============================== */
+.container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* ==============================
+   Пивной бокал в сборе
+   ============================== */
+.glass {
+    position: relative;
+    width: 140px;
+    height: 250px;
+    filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.15));
+}
+
+/* Стеклянная ручка */
+.handle {
+    position: absolute;
+    top: 45px;
+    left: -26px;
+    width: 32px;
+    height: 135px;
+    border: 11px solid rgba(180, 180, 180, 0.45);
+    border-right: none;
+    border-radius: 35px 0 0 35px;
+    box-shadow: 
+        inset -4px 0 8px rgba(255, 255, 255, 0.5),
+        2px 4px 8px rgba(0, 0, 0, 0.08);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Основное тело бокала */
+.glass_container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
+    border: 3.5px solid rgba(200, 200, 200, 0.5);
+    border-bottom: 12px solid rgba(180, 180, 180, 0.6); /* Толстое стеклянное дно */
+    border-radius: 8px 8px 18px 18px;
+    overflow: hidden;
+    box-shadow:
+        inset 8px 0 16px rgba(255, 255, 255, 0.3),
+        inset -8px 0 16px rgba(0, 0, 0, 0.08);
+    z-index: 3;
+}
+
+/* Вертикальные грани кружки */
+.glass_grooves {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 12px;
+    display: flex;
+    justify-content: space-around;
+    padding: 0 8px;
+    pointer-events: none;
+    z-index: 4;
+}
+
+.groove {
+    width: 24px;
+    height: 100%;
+    border-left: 2px dashed rgba(255, 255, 255, 0.18);
+    border-right: 2px dashed rgba(0, 0, 0, 0.03);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent 50%, rgba(0, 0, 0, 0.02));
+}
+
+/* ==============================
+   Жидкость (пиво)
+   ============================== */
+.wrapper {
+    height: 0;
+    width: 100%;
+    background: linear-gradient(
+        180deg,
+        #ffec80 0%,   /* Светлый верх */
+        #ffa200 20%,  /* Золотистая середина */
+        #d97706 75%,  /* Насыщенный янтарь */
+        #8a4000 100%  /* Темное пиво у дна */
+    );
+    position: absolute;
+    bottom: 0;
+    transition: height 2s cubic-bezier(0.25, 1, 0.5, 1);
+    overflow: hidden;
+    z-index: 2;
+}
+
+/* ==============================
+   Фактурная пенная шапка
+   ============================== */
+.foam {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: -4px;
+    right: -4px;
+    height: 28px;
+    background: radial-gradient(circle at 50% 100%, #fffdf0 0%, #ffffff 100%);
+    border-radius: 12px 12px 0 0;
+    /* Пышные пенные облака с помощью теней */
+    box-shadow: 
+        0 -4px 8px rgba(255, 255, 255, 0.9),
+        -15px -4px 0 4px #ffffff,
+        15px -4px 0 4px #ffffff,
+        inset 0 -6px 12px rgba(217, 119, 6, 0.2);
+    z-index: 5;
+    animation: foam-wobble 4s ease-in-out infinite;
+}
+
+@keyframes foam-wobble {
+    0%, 100% { transform: scaleY(1) translateY(0); }
+    50%       { transform: scaleY(1.08) translateY(-1px); }
+}
+
+/* ==============================
+   Пузырьки
+   ============================== */
+.wrapper > div {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+div .dot {
+    height: 5px;
+    width: 5px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.1));
+    position: absolute;
+}
+
+/* ==============================
+   Процент отображения
+   ============================== */
+#percent {
+    position: absolute;
+    z-index: 9;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    font-weight: 900;
+    color: #ffffff;
+    font-family: system-ui, -apple-system, sans-serif;
+    text-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.6),
+        0 0 16px rgba(217, 119, 6, 0.3);
+    letter-spacing: -0.5px;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+/* ==============================
+   Уведомления и таймер
+   ============================== */
+.notifications {
+    display: flex;
+    width: 100%;
+    height: 60px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #40404052;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 6px 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    color: #ffffff;
+}
+
+.not {
+    font-size: 15px;
+    text-align: center;
+    font-weight: 600;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.timer {
+    display: flex;
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    margin-top: 2px;
+    color: #ffbf00;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.timer span:after {
+    content: ':';
+    margin: 0 1px;
+}
+
+.timer span:last-child:after {
+    content: '';
+}
+
+.hidden {
+    display: none;
+}
+
+.ha:after {
+    content: '' !important;
+}
+
+/* ==============================
+   Анимации
+   ============================== */
+@keyframes slide {
+    0%   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, 150%) scale(0.8); opacity: 0; }
+}
+
+@keyframes cheers {
+    0%   { transform: scale(1) rotate(0deg); }
+    20%  { transform: scale(1.05) rotate(3deg); }
+    40%  { transform: scale(1.05) rotate(-3deg); }
+    60%  { transform: scale(1.02) rotate(1deg); }
+    80%  { transform: scale(1.02) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes animate {
+    0%   { transform: scale(0.3) translateY(0); opacity: 0; }
+    10%  { opacity: 0.8; }
+    90%  { opacity: 0.8; }
+    100% { transform: scale(1.2) translateY(-200px); opacity: 0; }
+}

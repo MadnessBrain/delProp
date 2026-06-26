@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>delProp — Улучшайзер</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+  <div class="app-header">
+    <div class="app-logo">
+      <span class="logo-icon">⚡</span>
+      <span class="logo-text">del<strong>Prop</strong></span>
+    </div>
+    <div class="user-badge" id="userBadge">
+      <span class="user-dot"></span>
+      <span class="user-name">Загрузка...</span>
+    </div>
+  </div>
+
+  <div class="tab-navigation" role="tablist">
+    <button type="button" class="tab-btn active" id="tab-btn-general" role="tab" aria-selected="true" aria-controls="tab-content-general">⚙️ Основные</button>
+    <button type="button" class="tab-btn" id="tab-btn-archive" role="tab" aria-selected="false" aria-controls="tab-content-archive">🗄️ Архив</button>
+  </div>
+
+  <form name="my">
+
+    <div id="tab-content-general" class="tab-content" role="tabpanel" aria-labelledby="tab-btn-general">
+      <fieldset id="mainUser" class="card">
+        <legend class="card-legend">
+          <span class="legend-icon">👤</span> Пользователь
+        </legend>
+        <label class="toggle-label">
+          Режим администратора
+          <div class="select-wrapper">
+            <select id="isAdmin">
+              <option value="true">✅ Да</option>
+              <option value="false">❌ Нет</option>
+            </select>
+          </div>
+        </label>
+      </fieldset>
+
+      <fieldset id="dellNews" class="card">
+        <legend class="card-legend">
+          <span class="legend-icon">📰</span> Новости
+        </legend>
+        <label class="toggle-label">
+          Удалять новости
+          <div class="select-wrapper">
+            <select id="news">
+              <option value="true">✅ Да</option>
+              <option value="false">❌ Нет</option>
+            </select>
+          </div>
+        </label>
+        <div class="news_collapse collapse-section">
+          <div class="section-title">Список новостей</div>
+          <div class="newsList"></div>
+          <div class="divider"></div>
+          <div class="news_collapse_footer">
+            <label class="checkbox-label">
+              <input type="checkbox" value="all" id="all" class="custom-checkbox">
+              <span class="checkbox-mark"></span>
+              Все
+            </label>
+            <button tabindex="-1" id="resNews" class="btn-secondary">↺ Обновить</button>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset id="change" class="card">
+        <legend class="card-legend">
+          <span class="legend-icon">🔘</span> Кнопки
+        </legend>
+        <label class="toggle-label">
+          Изменить кнопки
+          <div class="select-wrapper">
+            <select id="btns">
+              <option value="true">✅ Да</option>
+              <option value="false">❌ Нет</option>
+            </select>
+          </div>
+        </label>
+        <div class="btns_collapse collapse-section">
+          <label class="field-label" for="btns_style">Стиль кнопок</label>
+          <div class="select-wrapper">
+            <select id="btns_style">
+              <option value="normal">Нормальные</option>
+              <option value="lgbt">ЛДПР</option>
+            </select>
+          </div>
+          <div class="divider"></div>
+          <div class="checkboxlist" id="oldBtns"></div>
+        </div>
+      </fieldset>
+
+      <fieldset id="style" class="card">
+        <legend class="card-legend">
+          <span class="legend-icon">🎨</span> Оформление
+        </legend>
+        <label class="toggle-label">
+          Украшать сайт
+          <div class="select-wrapper">
+            <select id="styled">
+              <option value="true">✅ Да</option>
+              <option value="false">❌ Нет</option>
+            </select>
+          </div>
+        </label>
+        <div class="styled_collapse collapse-section">
+
+          <label class="field-label" for="filter">Фильтр</label>
+          <div class="select-wrapper">
+            <select id="filter">
+              <option value="none">Нет</option>
+              <option value="grayscale(1)">🎞 Город Грехов</option>
+              <option value="invert(1)">🌑 Blackout</option>
+              <option value="sepia(1)">📜 Сепия</option>
+              <option value="hue-rotate(270deg)">🌈 Изменение тона</option>
+              <option value="saturate(4)">💎 Усиление цвета</option>
+            </select>
+          </div>
+
+          <label class="field-label" for="football">Футбол</label>
+          <div class="select-wrapper">
+            <select id="football">
+              <option value="none">Не нужен</option>
+              <option value="spain">🇪🇸 Ла Лига</option>
+              <option value="england">🏴󠁧󠁢󠁥󠁮󠁧󠁿 АПЛ</option>
+              <option value="rfpl">🇷🇺 РПЛ</option>
+              <option value="champions-league">🏆 Лига Чемпионов</option>
+              <option value="L/world/tables">🌍 ЧМ 2022</option>
+            </select>
+          </div>
+
+          <div class="checkboxlist">
+            <label class="checkbox-label">
+              <input type="checkbox" name="rndImg" class="custom-checkbox">
+              <span class="checkbox-mark"></span>
+              Рандомные изображения
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="semen" class="custom-checkbox">
+              <span class="checkbox-mark"></span>
+              Я Семен
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="snow" class="custom-checkbox">
+              <span class="checkbox-mark"></span>
+              Анти-Снег
+            </label>
+          </div>
+
+          <div class="divider"></div>
+
+          <label class="field-label" for="colorized">Изменение цветов</label>
+          <div class="select-wrapper">
+            <select id="colorized">
+              <option value="true">✅ Да</option>
+              <option value="false">❌ Нет</option>
+            </select>
+          </div>
+          <div class="colorized_collapse collapse-section">
+            <label class="color-label">
+              <input type="color" value="#b5deff" name="mainColor" class="color-input">
+              <span>Основной цвет</span>
+            </label>
+            <input type="color" hidden value="#e2efff" name="mainColorHover">
+          </div>
+
+        </div>
+      </fieldset>
+
+      <fieldset id="workTimer" class="card">
+        <legend class="card-legend">
+          <span class="legend-icon">⏰</span> Рабочий таймер и инфо-шапка
+        </legend>
+        <label class="toggle-label">
+          Включить таймер (стакан)
+          <div class="select-wrapper">
+            <select id="timer">
+              <option value="true">✅ Да</option>
+              <option value="false">❌ Нет</option>
+            </select>
+          </div>
+        </label>
+        <label class="toggle-label">
+          Включить инфо-шапку
+          <div class="select-wrapper">
+            <select id="headerEnabled">
+              <option value="true">✅ Да</option>
+              <option value="false">❌ Нет</option>
+            </select>
+          </div>
+        </label>
+        <div class="timer_collapse collapse-section">
+          <div class="timer-grid">
+            <div class="time-inputs">
+              <label class="time-label">
+                <span class="time-icon">🌅</span>
+                <span class="time-text">Начало</span>
+                <input type="time" value="07:00" name="startDay" class="time-input">
+              </label>
+              <label class="time-label">
+                <span class="time-icon">🌆</span>
+                <span class="time-text">Конец</span>
+                <input type="time" value="16:00" name="endDay" class="time-input">
+              </label>
+              <label class="time-label">
+                <span class="time-icon">🎉</span>
+                <span class="time-text">Пятница</span>
+                <input type="time" value="14:45" readonly name="endDayF" class="time-input readonly">
+              </label>
+            </div>
+            <div class="breaks-panel">
+              <div class="breaks-title">ПЕРЕРЫВЫ</div>
+              <div class="break-item">
+                <time datetime="10:00">10:00</time>
+                <span class="break-dash">—</span>
+                <time datetime="10:15">10:15</time>
+              </div>
+              <div class="break-item">
+                <time datetime="11:45">11:45</time>
+                <span class="break-dash">—</span>
+                <time datetime="12:30">12:30</time>
+              </div>
+              <div class="break-item">
+                <time datetime="14:30">14:30</time>
+                <span class="break-dash">—</span>
+                <time datetime="14:45">14:45</time>
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div id="tab-content-archive" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-btn-archive">
+      <fieldset id="archive" class="card">
+        <legend class="card-legend">
+          <span class="legend-icon">🗄️</span> Архив
+        </legend>
+        <label class="toggle-label">
+          Улучшения Архива
+          <div class="select-wrapper">
+            <select id="enabled">
+              <option value="true">✅ Вкл</option>
+              <option value="false">❌ Выкл</option>
+            </select>
+          </div>
+        </label>
+        <div class="enabled_collapse collapse-section">
+          <div class="checkboxlist">
+            <label class="checkbox-label">
+              <input type="checkbox" name="saveTabs" value="true" class="custom-checkbox">
+              <span class="checkbox-mark"></span>
+              Запоминать активные вкладки
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="syncDocName" value="true" class="custom-checkbox">
+              <span class="checkbox-mark"></span>
+              Синхронизировать имя документа с URL
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" name="projectFilter" value="true" class="custom-checkbox">
+              <span class="checkbox-mark"></span>
+              Фильтр проектов (поиск и избранное)
+            </label>
+          </div>
+          <div class="divider"></div>
+          <div class="section-title">Управление данными</div>
+          <button type="button" id="clearHashes" class="btn-secondary" style="width: 100%; justify-content: center; margin-top: 4px;">
+            🗑 Очистить историю вкладок
+          </button>
+          <button type="button" id="runSpy" class="btn-secondary" style="width: 100%; justify-content: center; margin-top: 6px;">
+            🕵️ Собрать структуру DOM
+          </button>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="btns_container">
+      <div class="buttons_group">
+        <button type="submit" id="save" class="btn-primary">
+          <span class="btn-icon">💾</span> Сохранить
+        </button>
+        <button tabindex="-1" id="restore" class="btn-danger">
+          <span class="btn-icon">🗑</span> Сброс
+        </button>
+      </div>
+    </div>
+
+  </form>
+
+  <script src="popup.js"></script>
+</body>
+</html>
