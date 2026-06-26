@@ -1,23 +1,23 @@
 # Changelog
 
-All notable changes to the **delProp** extension will be documented in this file.
+Все заметные изменения в расширении **delProp** будут документироваться в этом файле.
 
 ## [1.0.2] - 2026-06-26
-### Changed
-- Fixed news deletion bug: news list in storage (`newsId`) now accumulates instead of overwriting, preventing standard news items from being unblocked/re-appearing when all news (standard + custom) are blocked.
-- Fixed race condition check in news cleaner to retry check up to 250ms if class or attribute is not initialized yet.
-- Removed football button / Sport-Express configurations from default settings in `background.js` completely.
+### Изменено
+- Исправлен баг удаления новостей: список новостей в хранилище (`newsId`) теперь накапливается, а не перезаписывается, предотвращая повторное появление обычных новостей при блокировке всех новостей (обычных + кастомных).
+- Исправлено состояние гонки в очистке новостей: добавлена повторная проверка в течение 250 мс, если класс элемента или атрибут ID ещё не инициализированы.
+- Полностью удалены конфигурации футбольных кнопок / Sport-Express из настроек по умолчанию в `background.js`.
 
 ## [1.0.1] - 2026-06-26
-### Added
-- Created `headerEnabled` setting in popup to allow turning the glassmorphic header bar on/off separately from the timer.
+### Добавлено
+- Создана настройка `headerEnabled` в попапе, позволяющая включать/выключать верхнюю шапку отдельно от таймера.
 
-### Changed
-- Rolled back the archive tree filter to simple project search + pinning (reverted group selection dropdown/logic) and implemented persistence for the pinned toggle button state (`archiveShowPinnedOnly`).
-- Restructured `home/` scripts: split `features.js` and `pivo.js` into modular files (`core.js`, `news.js`, `sidebar.js`, `misc.js`, `header.js`, `header.css`, and `pivo.js`).
+### Изменено
+- Откачен фильтр дерева архива к простому поиску проектов и закреплению (убран выпадающий список выбора групп) и реализовано сохранение состояния кнопки закрепа (`archiveShowPinnedOnly`).
+- Реструктуризированы скрипты в папке `home/`: разделены файлы `features.js` и `pivo.js` на модули (`core.js`, `news.js`, `sidebar.js`, `misc.js`, `header.js`, `header.css` и `pivo.js`).
 
 ## [1.0.0] - 2026-06-19
-### Added
-- Persistent top glassmorphic header bar.
-- Lateness tracking and Monday-Friday time offset calculations.
-- Integrated custom corporate news deleting from `db/db.json` and popup configurator.
+### Добавлено
+- Постоянная верхняя стеклянная инфо-шапка.
+- Отслеживание опозданий и расчет смещения времени с понедельника по пятницу.
+- Интегрировано удаление кастомных корпоративных новостей из `db/db.json` и конфигуратор в попапе.
