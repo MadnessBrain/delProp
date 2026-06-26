@@ -278,6 +278,8 @@ function saveFieldData(field) {
 					res.colorTheme[el.name] = el.value
 				}
 				break
+			case 'button':
+				break
 			default:
 				console.error('Что-то пошло не так, попробуй еще раз')
 				break
