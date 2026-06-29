@@ -98,6 +98,14 @@ body::-webkit-scrollbar-thumb {
   font-weight: 700;
 }
 
+.logo-copyright {
+  font-size: 9px;
+  color: var(--text-muted);
+  opacity: 0.8;
+  letter-spacing: 0.5px;
+  margin-top: 1px;
+}
+
 .user-badge {
   display: flex;
   align-items: center;
