@@ -1,4 +1,5 @@
 // archive/saveAddres.js
+const isArchiveOnly = chrome.runtime.getManifest().content_scripts.length === 1;
 let archiveSettings = null;
 let archiveHashes = {};
 const networkLogs = [];
@@ -27,12 +28,17 @@ injectNetSpy();
 
 // Load settings and cached hashes from storage
 chrome.storage.local.get(['formFields', 'archiveHashes', 'pinnedProjects', 'archiveShowPinnedOnly'], (data) => {
-	archiveSettings = data.formFields?.archiveField || {
+	archiveSettings = isArchiveOnly ? {
 		enabled: 'true',
 		saveTabs: 'true',
 		syncDocName: 'true',
 		projectFilter: 'true'
-	};
+	} : (data.formFields?.archiveField || {
+		enabled: 'true',
+		saveTabs: 'true',
+		syncDocName: 'true',
+		projectFilter: 'true'
+	});
 	archiveHashes = data.archiveHashes || {};
 	pinnedProjects = new Set(data.pinnedProjects || []);
 	archiveShowPinnedOnly = data.archiveShowPinnedOnly === true || data.archiveShowPinnedOnly === 'true';
@@ -65,12 +71,17 @@ chrome.storage.onChanged.addListener((changes, area) => {
 	if (area !== 'local') return;
 
 	if (changes.formFields) {
-		archiveSettings = changes.formFields.newValue?.archiveField || {
+		archiveSettings = isArchiveOnly ? {
 			enabled: 'true',
 			saveTabs: 'true',
 			syncDocName: 'true',
 			projectFilter: 'true'
-		};
+		} : (changes.formFields.newValue?.archiveField || {
+			enabled: 'true',
+			saveTabs: 'true',
+			syncDocName: 'true',
+			projectFilter: 'true'
+		});
 		if (archiveSettings.enabled === 'true') {
 			mainObserver.observe(document.body, { childList: true, subtree: true });
 		} else {
