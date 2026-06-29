@@ -76,13 +76,12 @@
 		const styleField = window.delProp.settings?.styleField || {};
 		if (styleField.styled === 'true' && styleField.filter && styleField.filter !== 'none') {
 			const filterVal = styleField.filter;
-			if (filterVal === 'grayscale(1)') {
-				document.body.classList.add('delprop-grayscaled');
-			} else if (filterVal === 'invert(1)') {
+			if (filterVal === 'invert(1)') {
 				document.body.style.filter = 'invert(1)';
 				document.body.classList.add('delprop-inverted');
 			} else {
-				document.body.style.filter = filterVal;
+				document.body.style.setProperty('--delprop-filter', filterVal);
+				document.body.classList.add('delprop-filtered');
 			}
 		}
 	}
@@ -143,11 +142,31 @@
 		}
 	});
 
+	function initAnyImageModal() {
+		document.addEventListener('click', (e) => {
+			const img = e.target.closest('img');
+			if (!img) return;
+
+			// Don't open if it's already inside a modal
+			if (img.closest('#modal')) return;
+
+			// Ignore tiny decorative icons (width or height <= 32px)
+			const w = img.naturalWidth || img.offsetWidth;
+			const h = img.naturalHeight || img.offsetHeight;
+			if (w <= 32 || h <= 32) return;
+
+			e.preventDefault();
+			e.stopPropagation();
+			window.delProp.openModal(img.src);
+		}, true); // use capture phase
+	}
+
 	window.delProp.onCoreReady(() => {
 		initAdminPatch();
 		initEmptyDivCleaner();
 		initAntiSnow();
 		initSiteFilters();
 		initKadrClickHandlers();
+		initAnyImageModal();
 	});
 })();

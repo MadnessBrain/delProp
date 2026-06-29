@@ -2,29 +2,8 @@
 const isArchiveOnly = chrome.runtime.getManifest().content_scripts.length === 1;
 let archiveSettings = null;
 let archiveHashes = {};
-const networkLogs = [];
 let pinnedProjects = new Set();
 let archiveShowPinnedOnly = false;
-
-// Cap network logs to prevent memory leaks in long-running pages
-document.addEventListener('delPropNetSpy', (e) => {
-	networkLogs.push(e.detail);
-	if (networkLogs.length > 1000) {
-		networkLogs.shift();
-	}
-});
-
-const injectNetSpy = () => {
-	const s = document.createElement('script');
-	s.type = 'text/javascript';
-	s.src = chrome.runtime.getURL('patch/network_spy.js');
-	if (document.head) {
-		document.head.appendChild(s);
-	} else {
-		document.documentElement.appendChild(s);
-	}
-};
-injectNetSpy();
 
 // Load settings and cached hashes from storage
 chrome.storage.local.get(['formFields', 'archiveHashes', 'pinnedProjects', 'archiveShowPinnedOnly'], (data) => {
@@ -227,96 +206,6 @@ document.addEventListener('change', (e) => {
 	}
 });
 
-function spyDOM() {
-	const walk = (node) => {
-		if (node.nodeType === Node.TEXT_NODE) {
-			const text = node.textContent.trim();
-			return text ? { type: 'text', text } : null;
-		}
-		if (node.nodeType !== Node.ELEMENT_NODE) return null;
-		
-		const tagName = node.tagName;
-		if (tagName === 'SCRIPT' || tagName === 'STYLE' || tagName === 'LINK' || tagName === 'META' || 
-			tagName === 'HEAD' || tagName === 'NOSCRIPT' || tagName === 'SVG' || tagName === 'PATH') {
-			return null;
-		}
-
-		const info = {
-			tag: tagName.toLowerCase(),
-			id: node.id || undefined,
-			classes: node.className || undefined,
-			attributes: {}
-		};
-
-		const attrs = node.attributes;
-		const attrsLen = attrs.length;
-		for (let i = 0; i < attrsLen; i++) {
-			const attr = attrs[i];
-			const nameLower = attr.name.toLowerCase();
-			if (
-				nameLower.includes('dhx') ||
-				nameLower.startsWith('name') ||
-				nameLower.startsWith('type') ||
-				nameLower.startsWith('value') ||
-				nameLower.startsWith('data-') ||
-				nameLower.startsWith('href') ||
-				nameLower.startsWith('title') ||
-				nameLower.startsWith('class') ||
-				nameLower.startsWith('id')
-			) {
-				info.attributes[attr.name] = attr.value;
-			}
-		}
-
-		if (Object.keys(info.attributes).length === 0) delete info.attributes;
-
-		const childNodes = node.childNodes;
-		const childCount = childNodes.length;
-		const children = [];
-		for (let i = 0; i < childCount; i++) {
-			const childInfo = walk(childNodes[i]);
-			if (childInfo) children.push(childInfo);
-		}
-
-		if (children.length > 0) {
-			info.children = children;
-		} else {
-			const text = node.textContent.trim();
-			if (text && text.length < 200) {
-				info.text = text;
-			}
-		}
-
-		return info;
-	};
-
-	try {
-		const domTree = walk(document.body);
-		const report = {
-			url: window.location.href,
-			timestamp: new Date().toISOString(),
-			networkLogs: networkLogs,
-			dom: domTree
-		};
-
-		console.log("=== DELPROP DOM SPY REPORT ===");
-		console.log(JSON.stringify(report, null, 2));
-		console.log("==============================");
-		
-		const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `archive_vympel_dom_spy.json`;
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		URL.revokeObjectURL(url);
-	} catch (e) {
-		console.error("delProp spyDOM error:", e);
-	}
-}
-
 function getProjectSpan(row) {
 	const directTable = row.querySelector(':scope > td > table');
 	if (!directTable) return null;
@@ -498,10 +387,3 @@ function initProjectFilter(treeContainer) {
 		applyFilter(treeContainer);
 	}
 }
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-	if (message.action === 'run_dom_spy') {
-		spyDOM();
-		sendResponse({ status: 'done' });
-	}
-});

@@ -2,13 +2,12 @@
   "manifest_version": 3,
   "name": "delProp",
   "description": "Улучшайзер",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "author": "R&L",
   "content_scripts": [
     {
       "matches": [
-        "http://pcserv.vympel/*",
-        "https://r-and-l.ru/*"
+        "http://pcserv.vympel/*"
       ],
       "js": [
         "home/core.js",
@@ -35,14 +34,6 @@
       "css": [
         "archive/archive.css"
       ]
-    },
-    {
-      "matches": [
-        "http://pcserv.vympel/timesheet/plan.html"
-      ],
-      "css": [
-        "home/plan.css"
-      ]
     }
   ],
   "background": {
@@ -64,13 +55,11 @@
         "patch/patch.js",
         "db/db.json",
         "home/pivo.css",
-        "home/header.css",
-        "patch/network_spy.js"
+        "home/header.css"
       ],
       "matches": [
         "http://pcserv.vympel/*",
-        "http://archive.vympel/*",
-        "https://r-and-l.ru/*"
+        "http://archive.vympel/*"
       ]
     }
   ]

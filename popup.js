@@ -473,30 +473,4 @@ clearHashesBtn.addEventListener('click', () => {
 		}, 1500)
 	})
 })
-
-// Run DOM spy logic
-const runSpyBtn = document.getElementById('runSpy')
-runSpyBtn.addEventListener('click', () => {
-	chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-		if(tabs[0] && tabs[0].url.includes("archive.vympel")) {
-			chrome.tabs.sendMessage(tabs[0].id, {action: 'run_dom_spy'}, (response) => {
-				if (chrome.runtime.lastError) {
-					console.error("delProp: error sending message to content script:", chrome.runtime.lastError);
-					alert("Ошибка: Убедитесь, что страница Архива полностью загружена и активна!");
-					return;
-				}
-				const originalText = runSpyBtn.textContent
-				runSpyBtn.textContent = '🕵️ Собрано!'
-				runSpyBtn.disabled = true
-				setTimeout(() => {
-					runSpyBtn.textContent = originalText
-					runSpyBtn.disabled = false
-				}, 1500)
-			});
-		} else {
-			alert("🕵️ Шпион может быть запущен только на странице Архива (http://archive.vympel/*)!");
-		}
-	})
-})
-
 document.addEventListener('DOMContentLoaded', restoreSettings)

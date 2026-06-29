@@ -118,7 +118,6 @@ const archiveDest = path.join(distDir, 'archive');
 // 1. Process specific source files for Archive version
 const jsFiles = [
 	['archive/saveAddres.js', 'archive/saveAddres.js'],
-	['patch/network_spy.js', 'patch/network_spy.js'],
 	['background.js', 'background.js']
 ];
 jsFiles.forEach(([src, relativeDest]) => {
@@ -171,7 +170,7 @@ const archivePopupHtml = `<!DOCTYPE html>
       <span class="logo-icon">⚡</span>
       <div style="display: flex; flex-direction: column; line-height: 1.1;">
         <span class="logo-text">del<strong>Prop</strong></span>
-        <span class="logo-copyright">© R&L</span>
+        <span class="logo-copyright">© <a href="https://r-and-l.ru" target="_blank" class="logo-link">R&L</a></span>
       </div>
     </div>
   </div>
@@ -196,13 +195,7 @@ const archiveManifest = {
 	action: {
 		default_popup: "popup.html",
 		default_title: "delProp"
-	},
-	web_accessible_resources: [
-		{
-			resources: ["patch/network_spy.js"],
-			matches: ["http://archive.vympel/*"]
-		}
-	]
+	}
 };
 fs.writeFileSync(path.join(archiveDest, 'manifest.json'), JSON.stringify(archiveManifest, null, 2), 'utf8');
 console.log("Created Archive manifest.json");
