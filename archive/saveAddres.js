@@ -306,6 +306,12 @@ function spyDOM() {
 	}
 }
 
+function getProjectSpan(row) {
+	const directTable = row.querySelector(':scope > td > table');
+	if (!directTable) return null;
+	return directTable.querySelector(':scope > tr > td > span.standartTreeRow, :scope > tr > td > span.selectedTreeRow, :scope > tbody > tr > td > span.standartTreeRow, :scope > tbody > tr > td > span.selectedTreeRow');
+}
+
 function applyFilter(treeContainer) {
 	const searchInput = treeContainer.querySelector('.delprop-search-input');
 	const pinToggle = treeContainer.querySelector('.delprop-pin-toggle');
@@ -325,24 +331,22 @@ function applyFilter(treeContainer) {
 	const rowsCount = rows.length;
 	for (let i = 0; i < rowsCount; i++) {
 		const row = rows[i];
-		const directTable = row.querySelector(':scope > td > table');
+		const span = getProjectSpan(row);
 		let isProject = false;
 		let projectCode = '';
 		let projectTitle = '';
 
-		if (directTable) {
-			const span = directTable.querySelector('span.standartTreeRow');
-			if (span) {
-				isProject = true;
-				projectCode = span.textContent.trim().toLowerCase();
-				const innerTr = directTable.querySelector('tr[title]');
-				projectTitle = innerTr ? innerTr.getAttribute('title').trim().toLowerCase() : '';
-			}
+		if (span) {
+			isProject = true;
+			projectCode = span.textContent.trim().toLowerCase();
+			const directTable = row.querySelector(':scope > td > table');
+			const innerTr = directTable ? directTable.querySelector(':scope > tr[title], :scope > tbody > tr[title]') : null;
+			projectTitle = innerTr ? innerTr.getAttribute('title').trim().toLowerCase() : '';
 		}
 
 		if (isProject) {
 			const isMatchQuery = !query || projectCode.includes(query) || projectTitle.includes(query);
-			const isMatchPinned = !showPinnedOnly || pinnedProjects.has(row.querySelector('span.standartTreeRow')?.textContent.trim());
+			const isMatchPinned = !showPinnedOnly || pinnedProjects.has(span.textContent.trim());
 			const isMatch = isMatchQuery && isMatchPinned;
 			
 			currentProjectVisible = isMatch;
@@ -366,15 +370,13 @@ function renderPins(treeContainer) {
 	const rowsCount = rows.length;
 	for (let i = 0; i < rowsCount; i++) {
 		const row = rows[i];
-		const directTable = row.querySelector(':scope > td > table');
-		if (!directTable) continue;
-
-		const span = directTable.querySelector('span.standartTreeRow');
+		const span = getProjectSpan(row);
 		if (!span) continue;
 
 		const projectCode = span.textContent.trim();
 		if (!projectCode) continue;
 
+		const directTable = row.querySelector(':scope > td > table');
 		let pin = directTable.querySelector('.delprop-pin');
 		if (!pin) {
 			pin = document.createElement('span');
@@ -465,10 +467,20 @@ function initProjectFilter(treeContainer) {
 			applyFilter(treeContainer);
 			
 			if (treeContainer._pinObserver) {
-				treeContainer._pinObserver.observe(mainTableStyle, { childList: true, subtree: true });
+				treeContainer._pinObserver.observe(mainTableStyle, {
+					childList: true,
+					subtree: true,
+					attributes: true,
+					attributeFilter: ['class', 'style']
+				});
 			}
 		});
-		treeContainer._pinObserver.observe(mainTableStyle, { childList: true, subtree: true });
+		treeContainer._pinObserver.observe(mainTableStyle, {
+			childList: true,
+			subtree: true,
+			attributes: true,
+			attributeFilter: ['class', 'style']
+		});
 		
 		// Initial rendering of pins
 		renderPins(treeContainer);
