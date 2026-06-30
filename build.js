@@ -52,7 +52,7 @@ function obfuscateJS(code) {
 }
 
 // Helper to compile/minify and obfuscate a JS file
-function processJS(srcPath, destPath) {
+function processJS(srcPath, destPath, addIntegrityCheck = false) {
 	console.log(`Processing JS: ${srcPath}`);
 	const tempDest = destPath + '.tmp.js';
 	
@@ -64,9 +64,65 @@ function processJS(srcPath, destPath) {
 	
 	// Read minified code and apply custom string obfuscation
 	const minifiedCode = fs.readFileSync(tempDest, 'utf8');
-	const obfuscatedCode = obfuscateJS(minifiedCode);
+	let finalCode = obfuscateJS(minifiedCode);
 	
-	fs.writeFileSync(destPath, obfuscatedCode, 'utf8');
+	if (addIntegrityCheck) {
+		const wrappedCode = `window.delPropInit = function(key) {
+			if (key !== 'INTEGRITY_SIGNATURE:00000000000000000000000000000000'.substring(20)) return;
+			${finalCode}
+		};`;
+		
+		const checkCode = `
+		;(async () => {
+			const crash = () => {
+				try { document.documentElement.innerHTML = ''; } catch(e){}
+				window.location.href = 'about:blank';
+				throw new Error('Security Error');
+			};
+			try {
+				const res = await fetch(chrome.runtime.getURL('archive/saveAddres.js'));
+				const txt = await res.text();
+				const marker = 'INTEGRITY_SIGNATURE:';
+				const idx = txt.indexOf(marker);
+				if (idx === -1) { crash(); return; }
+				const embedded = txt.substring(idx + marker.length, idx + marker.length + 32);
+				const before = txt.substring(0, idx + marker.length);
+				const after = txt.substring(idx + marker.length + 32);
+				const clean = before + ' '.repeat(32) + after;
+				let h = 5381;
+				for (let i = 0; i < clean.length; i++) {
+					h = (h * 33) ^ clean.charCodeAt(i);
+				}
+				const calculated = (h >>> 0).toString(16).padStart(32, '0').substring(0, 32);
+				if (calculated !== embedded) { crash(); return; }
+				window.delPropInit(calculated);
+			} catch (e) {
+				crash();
+			}
+		})();
+		// INTEGRITY_SIGNATURE:00000000000000000000000000000000
+		`;
+		
+		let combined = wrappedCode + "\n" + checkCode;
+		
+		const marker = 'INTEGRITY_SIGNATURE:';
+		const lastIdx = combined.lastIndexOf(marker);
+		
+		const before = combined.substring(0, lastIdx + marker.length);
+		const after = combined.substring(lastIdx + marker.length + 32);
+		const cleanCombined = before + ' '.repeat(32) + after;
+		
+		let h = 5381;
+		for (let i = 0; i < cleanCombined.length; i++) {
+			h = (h * 33) ^ cleanCombined.charCodeAt(i);
+		}
+		const finalHash = (h >>> 0).toString(16).padStart(32, '0').substring(0, 32);
+		
+		combined = combined.replace(/INTEGRITY_SIGNATURE:00000000000000000000000000000000/g, 'INTEGRITY_SIGNATURE:' + finalHash);
+		finalCode = combined;
+	}
+	
+	fs.writeFileSync(destPath, finalCode, 'utf8');
 	fs.unlinkSync(tempDest);
 }
 
@@ -110,11 +166,11 @@ const archiveDest = path.join(distDir, 'archive');
 
 // 1. Process specific source files for Archive version
 const jsFiles = [
-	['archive/saveAddres.js', 'archive/saveAddres.js'],
-	['background.js', 'background.js']
+	['archive/saveAddres.js', 'archive/saveAddres.js', true],
+	['background.js', 'background.js', false]
 ];
-jsFiles.forEach(([src, relativeDest]) => {
-	processJS(path.join(__dirname, src), path.join(archiveDest, relativeDest));
+jsFiles.forEach(([src, relativeDest, check]) => {
+	processJS(path.join(__dirname, src), path.join(archiveDest, relativeDest), check);
 });
 
 const cssFiles = [

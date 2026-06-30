@@ -7,7 +7,7 @@ const dellNewsField = form.elements.dellNews,
 	workTimerField = form.elements.workTimer,
 	mainUserField = form.elements.mainUser,
 	archiveField = form.elements.archive,
-	toHide = ['news', 'btns', 'styled', 'colorized', 'enabled']
+	toHide = ['btns', 'styled', 'colorized', 'enabled']
 
 function parseTimeToMinutes(timeStr) {
 	if (!timeStr || typeof timeStr !== 'string') return null;
@@ -49,67 +49,7 @@ chrome.storage.local.get(['user', 'user_input', 'formFields'], ({user, user_inpu
 
 
 
-//Рисуем список новостей
 
-const drawNews = ()=>{
-	chrome.storage.local.get('newsId', ({newsId})=>{
-		if(!!!newsId){
-			chrome.tabs.query(queryOptions, function(tabs){ if(tabs[0]) chrome.tabs.reload(tabs[0].id, function(){ setTimeout(drawNews, 1000) }) })
-		} else {
-			const box = document.querySelector('.newsList');
-			box.innerHTML = '';
-
-			fetch(chrome.runtime.getURL('db/db.json'))
-				.then(r => r.json())
-				.then(db => {
-					const customMap = {};
-					if (db && db.custom_news) {
-						db.custom_news.forEach(item => {
-							customMap[item.id] = item.title;
-						});
-					}
-					renderItems(customMap);
-				})
-				.catch(err => {
-					console.error("delProp popup: Could not resolve custom news titles:", err);
-					renderItems({});
-				});
-
-			function renderItems(customMap) {
-				newsId.forEach(id=>{
-					const l = document.createElement('label');
-					const displayTitle = customMap[id] || `${id} нов.`;
-					l.textContent = ` ${displayTitle}`;
-			
-					const input = document.createElement('input');
-					input.type = "checkbox";
-					input.value = id;
-					input.name = 'newsList';
-	
-					l.prepend(input);
-					box.prepend(l);
-				});
-
-				// Sync checkboxes with stored formFields settings to avoid race condition
-				chrome.storage.local.get('formFields', function({formFields}) {
-					if (formFields && formFields.dellNewsField && formFields.dellNewsField.newsList) {
-						const storedList = Array.isArray(formFields.dellNewsField.newsList)
-							? formFields.dellNewsField.newsList
-							: [formFields.dellNewsField.newsList];
-						box.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-							if (storedList.includes(cb.value)) {
-								cb.checked = true;
-							}
-						});
-					}
-					check();
-				});
-			}
-		}
-	})
-}
-
-drawNews()
 
 //-----------------------------------------------------------------------------------
 
@@ -153,23 +93,7 @@ function check() {
 	}
 }
 
-dellNewsField.addEventListener('change', (el)=>{
-	(el.target.localName === "input") 
-	check()
-})
 
-dellNewsField.elements.all.addEventListener('change', (el)=>{
-	const newsList = getFormElementsArray('newsList')
-	if (el.target.checked) {
-		for(const el of newsList) {
-			el.checked = true
-		}
-	} else {
-		for(const el of newsList) {
-			el.checked = false
-		}
-	}
-})
 
 //services
 
@@ -387,17 +311,17 @@ const reloadActiveTab = () => {
 form.save.addEventListener('click', (e)=>{
 	e.preventDefault()
 
-	const formFields = {}
-	form.querySelectorAll('fieldset').forEach(fs => {
-		formFields[fs.id + 'Field'] = saveFieldData(fs)
-	})
+	chrome.storage.local.get(['formFields'], ({formFields: oldFormFields}) => {
+		const formFields = {}
+		form.querySelectorAll('fieldset').forEach(fs => {
+			formFields[fs.id + 'Field'] = saveFieldData(fs)
+		})
 
-	chrome.storage.local.set({formFields}, reloadActiveTab)
-})
+		// Keep all dismissed news IDs that were already in storage
+		formFields.dellNewsField.newsList = oldFormFields?.dellNewsField?.newsList || [];
 
-form.resNews.addEventListener('click', (e)=>{
-	e.preventDefault()
-	chrome.storage.local.remove(['newsId'], reloadActiveTab)
+		chrome.storage.local.set({formFields}, reloadActiveTab)
+	});
 })
 
 form.restore.addEventListener('click', (e)=>{

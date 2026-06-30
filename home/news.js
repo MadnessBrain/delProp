@@ -16,15 +16,75 @@
 		}
 	}
 
+	function addCloseButton(node, id) {
+		if (node.querySelector('.delprop-news-close')) return;
+
+		node.style.position = 'relative';
+
+		const btn = document.createElement('span');
+		btn.className = 'delprop-news-close';
+		btn.innerHTML = '&times;';
+		btn.title = 'Скрыть новость';
+		
+		btn.style.position = 'absolute';
+		btn.style.top = '4px';
+		btn.style.right = '6px';
+		btn.style.cursor = 'pointer';
+		btn.style.fontSize = '16px';
+		btn.style.fontWeight = 'bold';
+		btn.style.color = '#9ca3af';
+		btn.style.lineHeight = '1';
+		btn.style.userSelect = 'none';
+		btn.style.transition = 'color 0.2s';
+		
+		btn.addEventListener('mouseenter', () => {
+			btn.style.color = '#ef4444';
+		});
+		btn.addEventListener('mouseleave', () => {
+			btn.style.color = '#9ca3af';
+		});
+
+		btn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			e.preventDefault();
+			
+			chrome.storage.local.get('formFields', ({formFields}) => {
+				formFields = formFields || {};
+				formFields.dellNewsField = formFields.dellNewsField || {};
+				
+				const currentList = Array.isArray(formFields.dellNewsField.newsList)
+					? formFields.dellNewsField.newsList
+					: (formFields.dellNewsField.newsList ? [formFields.dellNewsField.newsList] : []);
+				
+				if (!currentList.includes(id)) {
+					currentList.push(id);
+				}
+				
+				formFields.dellNewsField.newsList = currentList;
+				formFields.dellNewsField.news = 'true';
+				
+				chrome.storage.local.set({formFields}, () => {
+					node.style.transition = 'opacity 0.3s, max-height 0.3s';
+					node.style.opacity = '0';
+					setTimeout(() => {
+						node.remove();
+					}, 300);
+				});
+			});
+		});
+
+		node.appendChild(btn);
+	}
+
 	function initNewsCleaner() {
-		const dellNewsField = window.delProp.settings?.dellNewsField || {};
 		let customNewsList = [];
 
-		// Fetch custom news from db.json
 		fetch(chrome.runtime.getURL('db/db.json'))
 			.then(r => r.json())
 			.then(data => {
 				customNewsList = data.custom_news || [];
+				const newsList = document.querySelector('div[id*="ListObject_"]');
+				if (newsList) syncNewsAndCustomNews(newsList);
 			})
 			.catch(err => console.error("delProp: Error loading custom news:", err));
 		
@@ -34,96 +94,83 @@
 			document.addEventListener('click', applySemenStyle);
 		}
 
-		window.delProp.registerMutationHandler({
-			name: 'newsCleaner',
-			check: (node) => node && node.classList && node.classList.contains('dhx_list_item'),
-			callback: (node) => {
-				let retries = 0;
-				const maxRetries = 25; // 250ms total
+		function syncNewsAndCustomNews(container) {
+			chrome.storage.local.get('formFields', ({formFields}) => {
+				const currentSettings = formFields?.dellNewsField || {};
+				const selectedNews = Array.isArray(currentSettings.newsList)
+					? currentSettings.newsList
+					: (currentSettings.newsList ? [currentSettings.newsList] : []);
 
-				function checkAndClean() {
-					if (!node.parentNode) return; // Already removed or detached
-
-					if (node.className.includes('dhx_list_news_item_selected')) {
-						node.className = node.className.split('_selected')[0];
+				const items = container.querySelectorAll('.dhx_list_item:not(.delprop-custom-news)');
+				
+				const newIds = Array.from(items)
+					.map(el => el.getAttribute("dhx_f_id"))
+					.filter(Boolean);
+					
+				const customIds = customNewsList.map(item => item.id);
+				chrome.storage.local.get('newsId', ({newsId}) => {
+					const currentIds = Array.isArray(newsId) ? newsId : [];
+					const merged = Array.from(new Set([...currentIds, ...newIds, ...customIds]));
+					if (JSON.stringify(currentIds) !== JSON.stringify(merged)) {
+						chrome.storage.local.set({newsId: merged});
 					}
+				});
 
-					const isNews = node.className.includes('dhx_list_news_item');
+				items.forEach(node => {
 					const id = node.getAttribute("dhx_f_id");
-
-					// Defer if class or attribute is not set yet
-					if ((!isNews || !id) && retries < maxRetries) {
-						retries++;
-						setTimeout(checkAndClean, 10);
-						return;
-					}
-
-					// Exit if it's not a news item or lacks ID
-					if (!isNews || !id) {
-						return;
-					}
-
-					const parent = node.parentNode;
-					if (parent) {
-						// Collect IDs currently in the DOM
-						const items = parent.querySelectorAll('.dhx_list_item');
-						const newIds = Array.from(items)
-							.map(el => el.getAttribute("dhx_f_id"))
-							.filter(Boolean);
-						
-						const customIds = customNewsList.map(item => item.id);
-						chrome.storage.local.get('newsId', ({newsId}) => {
-							const currentIds = Array.isArray(newsId) ? newsId : [];
-							const merged = Array.from(new Set([...currentIds, ...newIds, ...customIds]));
-							if (JSON.stringify(currentIds) !== JSON.stringify(merged)) {
-								chrome.storage.local.set({newsId: merged});
-							}
-						});
-					}
-
-					if (dellNewsField.news === 'true') {
-						const selectedNews = Array.isArray(dellNewsField.newsList)
-							? dellNewsField.newsList
-							: (dellNewsField.newsList ? [dellNewsField.newsList] : []);
-
-						if (selectedNews.includes(id)) {
+					if (id) {
+						if (currentSettings.news === 'true' && selectedNews.includes(id)) {
 							node.remove();
-						}
-
-						// Inject custom news
-						if (parent && customNewsList.length > 0) {
-							customNewsList.forEach(item => {
-								if (selectedNews.includes(item.id)) {
-									const existing = parent.querySelector(`[dhx_f_id="${item.id}"]`);
-									if (existing) existing.remove();
-									return;
-								}
-
-								if (!parent.querySelector(`[dhx_f_id="${item.id}"]`)) {
-									const customNode = document.createElement('div');
-									customNode.className = 'dhx_list_item dhx_list_news_item delprop-custom-news';
-									customNode.setAttribute('dhx_f_id', item.id);
-									customNode.style.borderLeft = '4px solid #3b82f6';
-									customNode.style.padding = '8px';
-									customNode.style.backgroundColor = '#f0f7ff';
-									customNode.style.marginBottom = '6px';
-									customNode.style.borderRadius = '3px';
-									customNode.style.boxSizing = 'border-box';
-									
-									customNode.innerHTML = `
-										<div style="font-weight: bold; color: #1e3a8a; margin-bottom: 4px; font-family: inherit;">📣 ${item.title}</div>
-										<div style="font-size: 11px; line-height: 1.4; color: #374151; font-family: inherit;">${item.text}</div>
-									`;
-									
-									parent.prepend(customNode);
-								}
-							});
+						} else {
+							addCloseButton(node, id);
 						}
 					}
-					applySemenStyle();
+				});
+
+				if (customNewsList.length > 0) {
+					customNewsList.forEach(item => {
+						if (currentSettings.news === 'true' && selectedNews.includes(item.id)) {
+							const existing = container.querySelector(`[dhx_f_id="${item.id}"]`);
+							if (existing) existing.remove();
+							return;
+						}
+
+						let customNode = container.querySelector(`[dhx_f_id="${item.id}"]`);
+						if (!customNode) {
+							customNode = document.createElement('div');
+							customNode.className = 'dhx_list_item dhx_list_news_item delprop-custom-news';
+							customNode.setAttribute('dhx_f_id', item.id);
+							customNode.style.borderLeft = '4px solid #3b82f6';
+							customNode.style.padding = '8px';
+							customNode.style.backgroundColor = '#f0f7ff';
+							customNode.style.marginBottom = '6px';
+							customNode.style.borderRadius = '3px';
+							customNode.style.boxSizing = 'border-box';
+							customNode.style.position = 'relative';
+							
+							customNode.innerHTML = `
+								<div style="font-weight: bold; color: #1e3a8a; margin-bottom: 4px; font-family: inherit; padding-right: 20px;">📣 ${item.title}</div>
+								<div style="font-size: 11px; line-height: 1.4; color: #374151; font-family: inherit;">${item.text}</div>
+							`;
+							
+							container.prepend(customNode);
+						}
+						
+						addCloseButton(customNode, item.id);
+					});
 				}
 
-				checkAndClean();
+				applySemenStyle();
+			});
+		}
+
+		window.delProp.registerMutationHandler({
+			name: 'newsContainerWatcher',
+			checkMutation: (mutation) => {
+				const newsList = document.querySelector('div[id*="ListObject_"]');
+				if (newsList) {
+					syncNewsAndCustomNews(newsList);
+				}
 			}
 		});
 	}
