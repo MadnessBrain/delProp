@@ -18,7 +18,7 @@ function obfuscateJS(code) {
 	if (!code.trim()) return code;
 
 	const helperName = '_0x' + Math.random().toString(36).substring(2, 8);
-	const helperFn = `function ${helperName}(s){return atob(s);}\n`;
+	const helperFn = `function ${helperName}(s){return decodeURIComponent(escape(atob(s)));}\n`;
 	
 	const stringRegex = /(["'])(?:(?=(\\?))\2.)*?\1/g;
 	
@@ -97,14 +97,7 @@ function copyRecursiveFull(src, dest) {
 			copyRecursiveFull(path.join(src, child), path.join(dest, child));
 		});
 	} else {
-		const ext = path.extname(src);
-		if (ext === '.js') {
-			processJS(src, dest);
-		} else if (ext === '.css') {
-			processCSS(src, dest);
-		} else {
-			copyFile(src, dest);
-		}
+		copyFile(src, dest);
 	}
 }
 
