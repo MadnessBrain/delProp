@@ -5,8 +5,19 @@ let archiveHashes = {};
 let pinnedProjects = new Set();
 let archiveShowPinnedOnly = false;
 
+function getTabName(tabEl) {
+	if (!tabEl) return '';
+	const child = tabEl.childNodes[0];
+	if (child) {
+		const text = child.innerText || child.textContent;
+		return text ? text.trim() : '';
+	}
+	const text = tabEl.innerText || tabEl.textContent;
+	return text ? text.trim() : '';
+}
+
 // Load settings and cached hashes from storage
-chrome.storage.local.get(['formFields', 'archiveHashes', 'pinnedProjects', 'archiveShowPinnedOnly'], (data) => {
+chrome.storage.local.get(['formFields', 'archiveHashes', 'pinnedProjects', 'archiveShowPinnedOnly', 'lastOpenedDoc'], (data) => {
 	archiveSettings = isArchiveOnly ? {
 		enabled: 'true',
 		saveTabs: 'true',
@@ -25,6 +36,11 @@ chrome.storage.local.get(['formFields', 'archiveHashes', 'pinnedProjects', 'arch
 	if (archiveSettings.enabled !== 'true') {
 		console.log("delProp: Archive enhancements are disabled.");
 		return;
+	}
+
+	const lastOpenedDoc = data.lastOpenedDoc;
+	if (archiveSettings.saveTabs === 'true' && !window.location.hash && lastOpenedDoc) {
+		window.location.hash = `#${lastOpenedDoc}`;
 	}
 
 	// Scan existing DOM for elements already present
@@ -101,17 +117,17 @@ function updateHashFromDocName(node) {
 	const actvTab = document.querySelector('.dhxtabbar_tab.dhxtabbar_tab_actv');
 	if (!actvTab) return;
 
-	const tabText = actvTab.innerText || actvTab.textContent;
-	const r = tabText ? tabText.trim() : '';
+	const r = getTabName(actvTab);
 	if (!r) return;
 
 	if (archiveSettings.saveTabs === 'true') {
 		if (hash) {
 			archiveHashes[r] = hash;
+			chrome.storage.local.set({ archiveHashes, lastOpenedDoc: hash });
 		} else {
 			delete archiveHashes[r];
+			chrome.storage.local.set({ archiveHashes });
 		}
-		chrome.storage.local.set({ archiveHashes });
 	}
 
 	window.location.hash = hash ? `#${hash}` : '';
@@ -174,8 +190,7 @@ document.addEventListener('click', (e) => {
 	const tab = e.target.closest('.dhxtabbar_tab');
 	if (!tab) return;
 
-	const tabText = tab.innerText || tab.textContent;
-	const tabName = tabText ? tabText.trim() : '';
+	const tabName = getTabName(tab);
 	if (!tabName) return;
 
 	if (tabName === 'Создать') {
@@ -183,6 +198,9 @@ document.addEventListener('click', (e) => {
 	} else if (archiveSettings.saveTabs === 'true') {
 		const hash = archiveHashes[tabName];
 		window.location.hash = hash ? `#${hash}` : '';
+		if (hash) {
+			chrome.storage.local.set({ lastOpenedDoc: hash });
+		}
 	}
 });
 
@@ -200,6 +218,7 @@ document.addEventListener('change', (e) => {
 		const val = e.target.value.trim();
 		if (val) {
 			window.location.hash = val;
+			chrome.storage.local.set({ lastOpenedDoc: val });
 		} else if (inputPrevHash) {
 			window.location.hash = inputPrevHash;
 		}
