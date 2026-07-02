@@ -504,7 +504,13 @@ function renderCompTime() {
 				delBtn.addEventListener('click', () => {
 					if (confirm(`Удалить переработку за ${date.toLocaleDateString('ru-RU')}?`)) {
 						delete overtimeDays[key];
-						chrome.storage.local.set({ overtimeDays }, renderCompTime);
+						chrome.storage.local.get(['deletedOvertimeDays'], (dData) => {
+							const deleted = dData.deletedOvertimeDays || [];
+							if (!deleted.includes(key)) {
+								deleted.push(key);
+							}
+							chrome.storage.local.set({ overtimeDays, deletedOvertimeDays: deleted }, renderCompTime);
+						});
 					}
 				});
 				actionTd.appendChild(delBtn);
@@ -548,7 +554,17 @@ function renderCompTime() {
 // Reset all comp time listener
 document.getElementById('clearCompDb').addEventListener('click', () => {
 	if (confirm('Вы уверены, что хотите полностью стереть всю историю переработок?')) {
-		chrome.storage.local.remove('overtimeDays', renderCompTime);
+		chrome.storage.local.get(['overtimeDays', 'deletedOvertimeDays'], (data) => {
+			const overtimeDays = data.overtimeDays || {};
+			const deleted = data.deletedOvertimeDays || [];
+			Object.keys(overtimeDays).forEach(key => {
+				if (!deleted.includes(key)) {
+					deleted.push(key);
+				}
+			});
+			chrome.storage.local.set({ deletedOvertimeDays: deleted });
+			chrome.storage.local.remove('overtimeDays', renderCompTime);
+		});
 	}
 });
 

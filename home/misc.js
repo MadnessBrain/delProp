@@ -136,6 +136,14 @@
 					window.delProp.user_input = user_input;
 				});
 
+				if (node.dataset.activity) {
+					try {
+						const activityRows = JSON.parse(node.dataset.activity);
+						processActivityOvertimes(activityRows);
+					} catch (err) {
+						console.error("delProp: error parsing activity logs:", err);
+					}
+				}
 			} catch (e) {
 				console.error("delProp: error parsing user dataset:", e);
 			}
@@ -159,6 +167,88 @@
 			e.stopPropagation();
 			window.delProp.openModal(img.src);
 		}, true); // use capture phase
+	}
+
+	function processActivityOvertimes(rows) {
+		const settings = window.delProp.settings;
+		if (!settings || !settings.workTimerField || settings.workTimerField.overtimeToComp !== 'true') return;
+
+		const start = settings.workTimerField.startDay || '07:00';
+		const end = settings.workTimerField.endDay || '16:00';
+		const endF = settings.workTimerField.endDayF || '14:45';
+
+		const startMin = window.delProp.helpers.parseTimeToMinutes(start);
+		const endMin = window.delProp.helpers.parseTimeToMinutes(end);
+		const endFMin = window.delProp.helpers.parseTimeToMinutes(endF);
+
+		if (startMin === null || endMin === null || endFMin === null) return;
+
+		chrome.storage.local.get(['overtimeDays', 'deletedOvertimeDays'], (data) => {
+			const overtimeDays = data.overtimeDays || {};
+			const deletedOvertimeDays = data.deletedOvertimeDays || [];
+			let changed = false;
+
+			rows.forEach(row => {
+				if (!row.data || row.data.length < 4) return;
+
+				// Find the date string (e.g. "02.07.2026")
+				const dateStr = row.data.find(val => typeof val === 'string' && /^\d{2}\.\d{2}\.\d{4}$/.test(val));
+				if (!dateStr) return;
+
+				// format key for storage as YYYY-MM-DD
+				const parts = dateStr.split('.');
+				const storageKey = `${parts[2]}-${parts[1]}-${parts[0]}`;
+
+				// If day was explicitly deleted by the user, do not re-import it
+				if (deletedOvertimeDays.includes(storageKey)) return;
+
+				const loginTime = row.data.at(2);
+				const logoutTime = row.data.at(3);
+
+				if (!loginTime || !logoutTime) return;
+
+				const loginMin = window.delProp.helpers.parseTimeToMinutes(loginTime);
+				const logoutMin = window.delProp.helpers.parseTimeToMinutes(logoutTime);
+
+				if (loginMin === null || logoutMin === null) return;
+
+				// Parse date to check day of week
+				const dateObj = new Date(parts[2], parts[1] - 1, parts[0]);
+				const dayOfWeek = dateObj.getDay();
+
+				if (dayOfWeek === 0 || dayOfWeek === 6) return; // Skip weekends
+
+				// Calculate end of work day with lateness adjustments
+				let targetEndMin = (dayOfWeek === 5) ? endFMin : endMin;
+				let latenessMin = loginMin - startMin;
+
+				if (latenessMin > 0 && latenessMin <= 30) {
+					targetEndMin += latenessMin;
+				}
+
+				// Calculate overtime minutes
+				const overtimeMin = logoutMin - targetEndMin;
+
+				if (overtimeMin > 0) {
+					if (!overtimeDays[storageKey] || overtimeDays[storageKey].minutes !== overtimeMin) {
+						overtimeDays[storageKey] = {
+							minutes: overtimeMin,
+							slots: Array.from({ length: overtimeMin }, (_, i) => targetEndMin + i)
+						};
+						changed = true;
+					}
+				} else {
+					if (overtimeDays[storageKey]) {
+						delete overtimeDays[storageKey];
+						changed = true;
+					}
+				}
+			});
+
+			if (changed) {
+				chrome.storage.local.set({ overtimeDays });
+			}
+		});
 	}
 
 	window.delProp.onCoreReady(() => {

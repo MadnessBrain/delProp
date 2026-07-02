@@ -8,7 +8,10 @@ const setUserDiv = async ()=>{
 		div.id = 'user'
 		div.textContent = USER_DATA.fio
 		div.hidden = true
-		div.dataset.input = await getActivity(USER_DATA.user_id)
+		
+		const activityRows = await getActivityRows(USER_DATA.user_id)
+		div.dataset.input = getTodayLogin(activityRows)
+		div.dataset.activity = JSON.stringify(activityRows)
 		div.dataset.user = JSON.stringify(USER_DATA)
 		document.body.append(div)	
 	} else {
@@ -16,18 +19,25 @@ const setUserDiv = async ()=>{
 	}
 }
 
-async function getActivity(id) {
+async function getActivityRows(id) {
 	const now = new Date();
 	const month = now.getMonth() + 1;
 	const year = now.getFullYear();
 
-	const response = await fetch(`http://pcserv.vympel/get_activity2.php?from=01.${month}.${year}&to=01.${month+1}.${year}&user_id=${id}`);
-	const data = await response.json();
-	return findLast(data, now.toLocaleDateString());
+	try {
+		const response = await fetch(`http://pcserv.vympel/get_activity2.php?from=01.${month}.${year}&to=01.${month+1}.${year}&user_id=${id}`);
+		const data = await response.json();
+		return data.rows || [];
+	} catch (e) {
+		console.error("delProp: error getting activity from server:", e);
+		return [];
+	}
 }
 
-function findLast(data, date){
-	return data.rows.find(row => row.data.includes(date)).data.at(2);
+function getTodayLogin(rows) {
+	const todayStr = new Date().toLocaleDateString();
+	const row = rows.find(r => r.data && r.data.includes(todayStr));
+	return row ? row.data.at(2) : '';
 }
 
 setUserDiv()
