@@ -25,6 +25,7 @@
   <div class="tab-navigation" role="tablist">
     <button type="button" class="tab-btn active" id="tab-btn-general" role="tab" aria-selected="true" aria-controls="tab-content-general">⚙️ Основные</button>
     <button type="button" class="tab-btn" id="tab-btn-archive" role="tab" aria-selected="false" aria-controls="tab-content-archive">🗄️ Архив</button>
+    <button type="button" class="tab-btn" id="tab-btn-comp" role="tab" aria-selected="false" aria-controls="tab-content-comp">📅 Отгулы</button>
   </div>
 
   <form name="my">
@@ -174,6 +175,15 @@
             </select>
           </div>
         </label>
+        <label class="toggle-label">
+          Переработки в отгулы
+          <div class="select-wrapper">
+            <select id="overtimeToComp" name="overtimeToComp">
+              <option value="true">✅ Да</option>
+              <option value="false" selected>❌ Нет</option>
+            </select>
+          </div>
+        </label>
         <div class="timer_collapse collapse-section">
           <div class="timer-grid">
             <div class="time-inputs">
@@ -253,6 +263,53 @@
           <button type="button" id="clearHashes" class="btn-secondary" style="width: 100%; justify-content: center; margin-top: 4px;">
             🗑 Очистить историю вкладок
           </button>
+        </div>
+      </fieldset>
+    </div>
+
+    <div id="tab-content-comp" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-btn-comp">
+      <fieldset class="card">
+        <legend class="card-legend">
+          <span class="legend-icon">📅</span> Учет отгулов
+        </legend>
+        
+        <div class="comp-summary">
+          <div class="comp-summary-card">
+            <span class="comp-summary-title">Всего накоплено</span>
+            <span class="comp-summary-value" id="comp-total">0ч 0м</span>
+          </div>
+          <div class="comp-summary-card">
+            <span class="comp-summary-title">В этом месяце</span>
+            <span class="comp-summary-value" id="comp-month">0ч 0м</span>
+          </div>
+        </div>
+
+        <div class="comp-filter-row">
+          <label class="field-label" for="comp-month-filter" style="margin-bottom: 0;">Месяц:</label>
+          <div class="select-wrapper" style="width: 150px;">
+            <select id="comp-month-filter">
+              <option value="all">Все месяцы</option>
+            </select>
+          </div>
+          <button type="button" id="clearCompDb" class="btn-danger-small" style="margin-left: auto;">
+            🗑 Сбросить отгулы
+          </button>
+        </div>
+
+        <div class="comp-table-container">
+          <table class="comp-table">
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>День</th>
+                <th>Время</th>
+                <th style="width: 60px; text-align: center;">Удалить</th>
+              </tr>
+            </thead>
+            <tbody id="comp-table-body">
+              <!-- Rows will be dynamically generated -->
+            </tbody>
+          </table>
         </div>
       </fieldset>
     </div>

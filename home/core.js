@@ -32,8 +32,8 @@ window.delProp.helpers = {
 	getPerDay(start, end) {
 		const now = Date.now();
 		const linear = (now - start) / (end - start);
-		const eased = linear < 0 ? 0 : linear > 1 ? 1 : Math.pow(linear, 2.5);
-		const percent = Math.floor(eased * 100);
+		const val = linear < 0 ? 0 : linear > 1 ? 1 : linear;
+		const percent = Math.floor(val * 100);
 		const remaining = end - now;
 
 		let delay;
@@ -46,7 +46,7 @@ window.delProp.helpers = {
 		}
 
 		return {
-			percent: now < end ? percent : 100,
+			percent,
 			delay
 		};
 	}
@@ -272,4 +272,72 @@ chrome.storage.local.get(['formFields', 'user', 'user_input'], (data) => {
 		}
 	});
 	readyHandlers.length = 0; // Clear the queue
+
+	// Activity & Overtime Tracking
+	let lastActivity = Date.now();
+	const activityEvents = ['mousemove', 'keydown', 'click', 'scroll'];
+	activityEvents.forEach(evt => {
+		window.addEventListener(evt, () => {
+			lastActivity = Date.now();
+		}, { passive: true });
+	});
+
+	setInterval(() => {
+		const settings = window.delProp.settings;
+		if (!settings || !settings.workTimerField || settings.workTimerField.overtimeToComp !== 'true') return;
+
+		const now = Date.now();
+		if (now - lastActivity > 3 * 60 * 1000) return; // Inactive for > 3 min
+
+		const start = settings.workTimerField.startDay || '07:00';
+		const end = settings.workTimerField.endDay || '16:00';
+		const endF = settings.workTimerField.endDayF || '14:45';
+
+		let startWork = window.delProp.helpers.timeNorm(start);
+		let endWork = window.delProp.helpers.timeNorm(end);
+
+		const day = new Date().getDay();
+		if (day === 0 || day === 6) return; // Do not count weekends
+		if (day === 5) {
+			endWork = window.delProp.helpers.timeNorm(endF);
+		}
+
+		if (endWork <= startWork) {
+			endWork += 24 * 60 * 60 * 1000;
+		}
+
+		// Adjust for lateness if <= 30 min
+		if (window.delProp.user_input) {
+			const startMin = window.delProp.helpers.parseTimeToMinutes(start);
+			const loginMin = window.delProp.helpers.parseTimeToMinutes(window.delProp.user_input);
+			if (startMin !== null && loginMin !== null && loginMin > startMin) {
+				const latenessMin = loginMin - startMin;
+				if (latenessMin > 0 && latenessMin <= 30) {
+					endWork += latenessMin * 60 * 1000;
+				}
+			}
+		}
+
+		// Check if we are past end of work day
+		if (now > endWork && now < endWork + 8 * 60 * 60 * 1000) {
+			const todayStr = new Date().toLocaleDateString('sv'); // 'YYYY-MM-DD'
+			const minutesFromMidnight = new Date().getHours() * 60 + new Date().getMinutes();
+
+			chrome.storage.local.get(['overtimeDays'], (d) => {
+				const overtimeDays = d.overtimeDays || {};
+				if (!overtimeDays[todayStr]) {
+					overtimeDays[todayStr] = {
+						minutes: 0,
+						slots: []
+					};
+				}
+				const dayData = overtimeDays[todayStr];
+				if (!dayData.slots.includes(minutesFromMidnight)) {
+					dayData.slots.push(minutesFromMidnight);
+					dayData.minutes = dayData.slots.length;
+					chrome.storage.local.set({ overtimeDays });
+				}
+			});
+		}
+	}, 30000);
 });

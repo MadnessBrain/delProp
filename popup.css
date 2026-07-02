@@ -657,3 +657,125 @@ option {
 .tab-content.hidden {
   display: none !important;
 }
+
+/* ============================
+   COMP TIME (OTGULY) STYLES
+   ============================ */
+.comp-summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.comp-summary-card {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.comp-summary-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.comp-summary-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.comp-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn-danger-small {
+  background: rgba(239, 83, 80, 0.1);
+  color: #ef5350;
+  border: 1px solid rgba(239, 83, 80, 0.3);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all var(--transition);
+}
+
+.btn-danger-small:hover {
+  background: rgba(239, 83, 80, 0.2);
+  border-color: #ef5350;
+  box-shadow: 0 0 8px rgba(239, 83, 80, 0.2);
+}
+
+.comp-table-container {
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(15, 17, 23, 0.2);
+}
+
+.comp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.comp-table th {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 8px 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.comp-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  color: var(--text);
+}
+
+.comp-table tr:hover td {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.comp-btn-delete {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  transition: all var(--transition);
+}
+
+.comp-btn-delete:hover {
+  color: #ef5350;
+  background: rgba(239, 83, 80, 0.1);
+}

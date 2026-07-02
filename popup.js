@@ -243,7 +243,8 @@ function restoreSettings() {
 				},
 				workTimerField: {
 					timer: 'false',
-					headerEnabled: 'false'
+					headerEnabled: 'false',
+					overtimeToComp: 'false'
 				},
 				mainUserField: {
 					isAdmin: 'false'
@@ -339,7 +340,8 @@ form.restore.addEventListener('click', (e)=>{
 		},
 		workTimerField: {
 			timer: 'false',
-			headerEnabled: 'false'
+			headerEnabled: 'false',
+			overtimeToComp: 'false'
 		},
 		mainUserField: {
 			isAdmin: 'false'
@@ -361,28 +363,32 @@ form.mainColor.addEventListener('input', (el)=>{
 })
 
 // Tab switching logic
-const btnGeneral = document.getElementById('tab-btn-general')
-const btnArchive = document.getElementById('tab-btn-archive')
-const contentGeneral = document.getElementById('tab-content-general')
-const contentArchive = document.getElementById('tab-content-archive')
+const tabs = [
+	{ btn: document.getElementById('tab-btn-general'), content: document.getElementById('tab-content-general') },
+	{ btn: document.getElementById('tab-btn-archive'), content: document.getElementById('tab-content-archive') },
+	{ btn: document.getElementById('tab-btn-comp'), content: document.getElementById('tab-content-comp') }
+];
 
-btnGeneral.addEventListener('click', () => {
-	btnGeneral.classList.add('active')
-	btnGeneral.setAttribute('aria-selected', 'true')
-	btnArchive.classList.remove('active')
-	btnArchive.setAttribute('aria-selected', 'false')
-	contentGeneral.classList.remove('hidden')
-	contentArchive.classList.add('hidden')
-})
-
-btnArchive.addEventListener('click', () => {
-	btnArchive.classList.add('active')
-	btnArchive.setAttribute('aria-selected', 'true')
-	btnGeneral.classList.remove('active')
-	btnGeneral.setAttribute('aria-selected', 'false')
-	contentArchive.classList.remove('hidden')
-	contentGeneral.classList.add('hidden')
-})
+tabs.forEach(tab => {
+	if (!tab.btn) return;
+	tab.btn.addEventListener('click', () => {
+		tabs.forEach(t => {
+			if (!t.btn) return;
+			if (t === tab) {
+				t.btn.classList.add('active');
+				t.btn.setAttribute('aria-selected', 'true');
+				t.content.classList.remove('hidden');
+			} else {
+				t.btn.classList.remove('active');
+				t.btn.setAttribute('aria-selected', 'false');
+				t.content.classList.add('hidden');
+			}
+		});
+		if (tab.btn.id === 'tab-btn-comp') {
+			renderCompTime();
+		}
+	});
+});
 
 // Clear archive hashes logic
 const clearHashesBtn = document.getElementById('clearHashes')
@@ -397,4 +403,153 @@ clearHashesBtn.addEventListener('click', () => {
 		}, 1500)
 	})
 })
+
+// Overtime / Comp Time logic
+const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+const dayNames = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+
+function formatMinutes(totalMin) {
+	const h = Math.floor(totalMin / 60);
+	const m = totalMin % 60;
+	return `${h}ч ${m}м`;
+}
+
+function renderCompTime() {
+	chrome.storage.local.get(['overtimeDays'], (data) => {
+		const overtimeDays = data.overtimeDays || {};
+		
+		// Sort days in descending order
+		const sortedKeys = Object.keys(overtimeDays).sort((a, b) => b.localeCompare(a));
+		
+		// Populate month filter dropdown
+		const filterDropdown = document.getElementById('comp-month-filter');
+		const currentSelected = filterDropdown.value || 'all';
+		filterDropdown.innerHTML = '<option value="all">Все месяцы</option>';
+		
+		const monthsFound = new Set();
+		sortedKeys.forEach(key => {
+			const date = new Date(key);
+			if (isNaN(date.getTime())) return;
+			const monthYearVal = `${date.getFullYear()}-${date.getMonth()}`;
+			const monthYearText = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+			if (!monthsFound.has(monthYearVal)) {
+				monthsFound.add(monthYearVal);
+				const opt = document.createElement('option');
+				opt.value = monthYearVal;
+				opt.textContent = monthYearText;
+				filterDropdown.appendChild(opt);
+			}
+		});
+		
+		// Restore selected filter if it still exists
+		if (Array.from(monthsFound).includes(currentSelected)) {
+			filterDropdown.value = currentSelected;
+		} else {
+			filterDropdown.value = 'all';
+		}
+		
+		// Render function
+		const drawTable = () => {
+			const filterVal = filterDropdown.value;
+			const tbody = document.getElementById('comp-table-body');
+			tbody.innerHTML = '';
+			
+			let totalMinutes = 0;
+			let thisMonthMinutes = 0;
+			const now = new Date();
+			const thisMonthVal = `${now.getFullYear()}-${now.getMonth()}`;
+			
+			sortedKeys.forEach(key => {
+				const dayData = overtimeDays[key];
+				const date = new Date(key);
+				if (isNaN(date.getTime())) return;
+				
+				const monthYearVal = `${date.getFullYear()}-${date.getMonth()}`;
+				
+				// Calculate values for month stats
+				totalMinutes += dayData.minutes || 0;
+				if (monthYearVal === thisMonthVal) {
+					thisMonthMinutes += dayData.minutes || 0;
+				}
+				
+				// Apply month filter
+				if (filterVal !== 'all' && monthYearVal !== filterVal) {
+					return;
+				}
+				
+				const tr = document.createElement('tr');
+				
+				// Date column
+				const dateTd = document.createElement('td');
+				dateTd.textContent = date.toLocaleDateString('ru-RU');
+				
+				// Day of week
+				const dayTd = document.createElement('td');
+				dayTd.textContent = dayNames[date.getDay()];
+				
+				// Time worked
+				const timeTd = document.createElement('td');
+				timeTd.textContent = formatMinutes(dayData.minutes || 0);
+				timeTd.style.fontWeight = '600';
+				timeTd.style.color = 'var(--accent)';
+				
+				// Delete button
+				const actionTd = document.createElement('td');
+				actionTd.style.textAlign = 'center';
+				const delBtn = document.createElement('button');
+				delBtn.type = 'button';
+				delBtn.className = 'comp-btn-delete';
+				delBtn.innerHTML = '🗑️';
+				delBtn.title = 'Удалить эту запись';
+				delBtn.addEventListener('click', () => {
+					if (confirm(`Удалить переработку за ${date.toLocaleDateString('ru-RU')}?`)) {
+						delete overtimeDays[key];
+						chrome.storage.local.set({ overtimeDays }, renderCompTime);
+					}
+				});
+				actionTd.appendChild(delBtn);
+				
+				tr.appendChild(dateTd);
+				tr.appendChild(dayTd);
+				tr.appendChild(timeTd);
+				tr.appendChild(actionTd);
+				
+				tbody.appendChild(tr);
+			});
+			
+			// If table is empty
+			if (tbody.children.length === 0) {
+				const tr = document.createElement('tr');
+				const td = document.createElement('td');
+				td.colSpan = 4;
+				td.style.textAlign = 'center';
+				td.style.color = 'var(--text-muted)';
+				td.style.padding = '20px 0';
+				td.textContent = 'Нет записей о переработках';
+				tr.appendChild(td);
+				tbody.appendChild(tr);
+			}
+			
+			// Update summary cards
+			document.getElementById('comp-total').textContent = formatMinutes(totalMinutes);
+			document.getElementById('comp-month').textContent = formatMinutes(thisMonthMinutes);
+		};
+		
+		drawTable();
+		
+		// Event listener for filter change
+		if (!filterDropdown.dataset.listenerAdded) {
+			filterDropdown.addEventListener('change', drawTable);
+			filterDropdown.dataset.listenerAdded = 'true';
+		}
+	});
+}
+
+// Reset all comp time listener
+document.getElementById('clearCompDb').addEventListener('click', () => {
+	if (confirm('Вы уверены, что хотите полностью стереть всю историю переработок?')) {
+		chrome.storage.local.remove('overtimeDays', renderCompTime);
+	}
+});
+
 document.addEventListener('DOMContentLoaded', restoreSettings)
