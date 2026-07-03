@@ -83,7 +83,7 @@ function processJS(srcPath, destPath, addIntegrityCheck = false) {
 				const res = await fetch(chrome.runtime.getURL('archive/saveAddres.js'));
 				const txt = await res.text();
 				const marker = 'INTEGRITY_SIGNATURE:';
-				const idx = txt.indexOf(marker);
+				const idx = txt.lastIndexOf(marker);
 				if (idx === -1) { crash(); return; }
 				const embedded = txt.substring(idx + marker.length, idx + marker.length + 32);
 				const before = txt.substring(0, idx + marker.length);
