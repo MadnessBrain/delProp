@@ -61,7 +61,6 @@
 				}
 				
 				formFields.dellNewsField.newsList = currentList;
-				formFields.dellNewsField.news = 'true';
 				
 				chrome.storage.local.set({formFields}, () => {
 					node.style.transition = 'opacity 0.3s, max-height 0.3s';
@@ -119,7 +118,7 @@
 				items.forEach(node => {
 					const id = node.getAttribute("dhx_f_id");
 					if (id) {
-						if (currentSettings.news === 'true' && selectedNews.includes(id)) {
+						if (currentSettings.news === 'true' || selectedNews.includes(id)) {
 							node.remove();
 						} else {
 							addCloseButton(node, id);
@@ -129,7 +128,7 @@
 
 				if (customNewsList.length > 0) {
 					customNewsList.forEach(item => {
-						if (currentSettings.news === 'true' && selectedNews.includes(item.id)) {
+						if (selectedNews.includes(item.id)) {
 							const existing = container.querySelector(`[dhx_f_id="${item.id}"]`);
 							if (existing) existing.remove();
 							return;
