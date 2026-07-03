@@ -40,6 +40,9 @@
 			triggerBtn.classList.remove('hidden');
 		}
 
+		headerBar.title = 'Кликните, чтобы скрыть панель';
+		headerBar.style.cursor = 'pointer';
+
 		headerBar.innerHTML = `
 			<div class="delprop-header-content">
 				<div class="header-left">
@@ -56,15 +59,12 @@
 						<div class="header-progress-bar" id="header-progress-bar"></div>
 						<span class="header-progress-text" id="header-progress-text">0%</span>
 					</div>
-					<button class="header-toggle-btn" id="header-toggle-btn">▲</button>
 				</div>
 			</div>
 		`;
 
 		document.body.appendChild(headerBar);
 		document.body.appendChild(triggerBtn);
-
-		const toggleBtn = headerBar.querySelector('#header-toggle-btn');
 
 		const minimize = () => {
 			headerBar.classList.add('minimized');
@@ -80,7 +80,7 @@
 			chrome.storage.local.set({ headerMinimized: 'false' });
 		};
 
-		toggleBtn.addEventListener('click', minimize);
+		headerBar.addEventListener('click', minimize);
 		triggerBtn.addEventListener('click', expand);
 
 		// Start progress tracking loop

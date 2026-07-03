@@ -1,13 +1,18 @@
 .delprop-header-bar {
 	position: fixed;
 	top: 0;
-	left: 0;
-	width: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 65%;
+	max-width: 65%;
 	height: 38px;
 	background: rgba(30, 41, 59, 0.85);
 	backdrop-filter: blur(12px);
 	-webkit-backdrop-filter: blur(12px);
-	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-top: none;
+	border-bottom-left-radius: 8px;
+	border-bottom-right-radius: 8px;
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 	z-index: 999999;
 	color: #f8fafc;
@@ -19,7 +24,7 @@
 	box-sizing: border-box;
 }
 .delprop-header-bar.minimized {
-	transform: translateY(-100%);
+	transform: translate(-50%, -100%);
 }
 .delprop-header-content {
 	display: flex;
@@ -102,7 +107,8 @@
 .delprop-header-trigger {
 	position: fixed;
 	top: 0;
-	right: 16px;
+	left: 50%;
+	transform: translateX(-50%);
 	height: 20px;
 	width: 36px;
 	background: rgba(30, 41, 59, 0.85);
@@ -122,7 +128,7 @@
 	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
 }
 .delprop-header-trigger.hidden {
-	transform: translateY(-100%);
+	transform: translate(-50%, -100%);
 	opacity: 0;
 	pointer-events: none;
 }
