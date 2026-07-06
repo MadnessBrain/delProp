@@ -89,9 +89,10 @@ function processJS(srcPath, destPath, addIntegrityCheck = false) {
 				const before = txt.substring(0, idx + marker.length);
 				const after = txt.substring(idx + marker.length + 32);
 				const clean = before + ' '.repeat(32) + after;
+				const cleanForHash = clean.replace(/\r/g, '').replace(/\n/g, '');
 				let h = 5381;
-				for (let i = 0; i < clean.length; i++) {
-					h = (h * 33) ^ clean.charCodeAt(i);
+				for (let i = 0; i < cleanForHash.length; i++) {
+					h = (h * 33) ^ cleanForHash.charCodeAt(i);
 				}
 				const calculated = (h >>> 0).toString(16).padStart(32, '0').substring(0, 32);
 				if (calculated !== embedded) { crash(); return; }
@@ -111,10 +112,11 @@ function processJS(srcPath, destPath, addIntegrityCheck = false) {
 		const before = combined.substring(0, lastIdx + marker.length);
 		const after = combined.substring(lastIdx + marker.length + 32);
 		const cleanCombined = before + ' '.repeat(32) + after;
+		const cleanCombinedForHash = cleanCombined.replace(/\r/g, '').replace(/\n/g, '');
 		
 		let h = 5381;
-		for (let i = 0; i < cleanCombined.length; i++) {
-			h = (h * 33) ^ cleanCombined.charCodeAt(i);
+		for (let i = 0; i < cleanCombinedForHash.length; i++) {
+			h = (h * 33) ^ cleanCombinedForHash.charCodeAt(i);
 		}
 		const finalHash = (h >>> 0).toString(16).padStart(32, '0').substring(0, 32);
 		
