@@ -200,6 +200,8 @@ function saveFieldData(field) {
 				} else if (el.type === 'color') {
 					if (!res.colorTheme) res.colorTheme = {}
 					res.colorTheme[el.name] = el.value
+				} else {
+					res[el.name] = el.value
 				}
 				break
 			case 'button':
@@ -244,7 +246,8 @@ function restoreSettings() {
 				workTimerField: {
 					timer: 'false',
 					headerEnabled: 'false',
-					overtimeToComp: 'false'
+					overtimeToComp: 'false',
+					userIcon: '👤'
 				},
 				mainUserField: {
 					isAdmin: 'false'
@@ -298,6 +301,7 @@ function restoreSettings() {
 		updateTimerCollapse()
 
 		check()
+		initEmojiGrid()
 	})
 }
 
@@ -341,7 +345,8 @@ form.restore.addEventListener('click', (e)=>{
 		workTimerField: {
 			timer: 'false',
 			headerEnabled: 'false',
-			overtimeToComp: 'false'
+			overtimeToComp: 'false',
+			userIcon: '👤'
 		},
 		mainUserField: {
 			isAdmin: 'false'
@@ -354,7 +359,10 @@ form.restore.addEventListener('click', (e)=>{
 		}
 	}
 	chrome.storage.local.set({formFields: defaultFields}, () => {
-		chrome.storage.local.remove(['newsId'], reloadActiveTab)
+		chrome.storage.local.remove(['newsId'], () => {
+			initEmojiGrid();
+			reloadActiveTab();
+		});
 	})
 })
 
@@ -415,8 +423,9 @@ function formatMinutes(totalMin) {
 }
 
 function renderCompTime() {
-	chrome.storage.local.get(['overtimeDays'], (data) => {
+	chrome.storage.local.get(['overtimeDays', 'carryOverMinutes'], (data) => {
 		const overtimeDays = data.overtimeDays || {};
+		const carryOverMinutes = data.carryOverMinutes || 0;
 		
 		// Sort days in descending order
 		const sortedKeys = Object.keys(overtimeDays).sort((a, b) => b.localeCompare(a));
@@ -537,7 +546,8 @@ function renderCompTime() {
 			}
 			
 			// Update summary cards
-			document.getElementById('comp-total').textContent = formatMinutes(totalMinutes);
+			document.getElementById('comp-carryover').textContent = formatMinutes(carryOverMinutes);
+			document.getElementById('comp-total').textContent = formatMinutes(totalMinutes + carryOverMinutes);
 			document.getElementById('comp-month').textContent = formatMinutes(thisMonthMinutes);
 		};
 		
@@ -566,6 +576,47 @@ document.getElementById('clearCompDb').addEventListener('click', () => {
 			chrome.storage.local.remove('overtimeDays', renderCompTime);
 		});
 	}
+});
+
+function initEmojiGrid() {
+	const grid = document.getElementById('emoji-grid');
+	const input = document.getElementById('userIcon');
+	if (!grid || !input) return;
+
+	grid.innerHTML = '';
+	const availableEmojis = [
+		'👤', '⚡', '😈', '👹', '👾', '🤖', '🐱', '🐶', '🍺', '🚀', '🐸', '🐼',
+		'🦊', '🐻', '🦁', '🐷', '🐒', '🦄', '🐉', '🍕', '🍔', '🍩', '🎮', '🎸',
+		'👑', '👽', '👻', '💀', '💥', '🔥', '❤️', '🌟', '🍀', '💎', '☯️', '🧿',
+		'🌀', '🎭', '🔮'
+	];
+	
+	availableEmojis.forEach(emoji => {
+		const span = document.createElement('span');
+		span.className = 'emoji-item';
+		span.textContent = emoji;
+		if (input.value === emoji) {
+			span.classList.add('selected');
+		}
+		span.addEventListener('click', () => {
+			grid.querySelectorAll('.emoji-item').forEach(el => el.classList.remove('selected'));
+			span.classList.add('selected');
+			input.value = emoji;
+		});
+		grid.appendChild(span);
+	});
+}
+
+document.getElementById('restoreNewsBtn').addEventListener('click', () => {
+	chrome.storage.local.get(['formFields'], ({ formFields }) => {
+		formFields = formFields || {};
+		formFields.dellNewsField = formFields.dellNewsField || {};
+		formFields.dellNewsField.newsList = [];
+		chrome.storage.local.set({ formFields }, () => {
+			alert('Скрытые новости успешно восстановлены. Обновите страницу портала, чтобы увидеть их.');
+			reloadActiveTab();
+		});
+	});
 });
 
 document.addEventListener('DOMContentLoaded', restoreSettings)

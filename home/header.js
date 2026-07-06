@@ -43,10 +43,12 @@
 		headerBar.title = 'Кликните, чтобы скрыть панель';
 		headerBar.style.cursor = 'pointer';
 
+		const userIcon = workTimerField.userIcon || '👤';
+
 		headerBar.innerHTML = `
 			<div class="delprop-header-content">
 				<div class="header-left">
-					<span class="header-icon">👤</span>
+					<span class="header-icon">${userIcon}</span>
 					<span class="header-username">${fio}</span>
 				</div>
 				<div class="header-center">

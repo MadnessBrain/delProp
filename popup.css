@@ -779,3 +779,43 @@ option {
   color: #ef5350;
   background: rgba(239, 83, 80, 0.1);
 }
+
+/* ============================
+   EMOJI GRID CUSTOMIZATION
+   ============================ */
+.emoji-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  max-height: 110px;
+  overflow-y: auto;
+}
+
+.emoji-item {
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all var(--transition);
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+.emoji-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.1);
+}
+
+.emoji-item.selected {
+  background: rgba(16, 200, 233, 0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}

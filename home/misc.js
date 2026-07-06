@@ -226,8 +226,10 @@
 					targetEndMin += latenessMin;
 				}
 
-				// Calculate overtime minutes
-				const overtimeMin = logoutMin - targetEndMin;
+				// Calculate overtime minutes capped at 19:00 (1140 minutes)
+				const maxLogoutMin = 19 * 60;
+				const effectiveLogoutMin = Math.min(logoutMin, maxLogoutMin);
+				const overtimeMin = effectiveLogoutMin - targetEndMin;
 
 				if (overtimeMin > 0) {
 					if (!overtimeDays[storageKey] || overtimeDays[storageKey].minutes !== overtimeMin) {
@@ -245,10 +247,47 @@
 				}
 			});
 
+			// Parse monthly carry-over balance (отгулы на начало месяца) from the last row if present
+			if (rows.length > 0) {
+				const lastRow = rows[rows.length - 1];
+				if (lastRow && lastRow.data && lastRow.data.length >= 2) {
+					const hasDate = lastRow.data.some(val => typeof val === 'string' && /^\d{2}\.\d{2}\.\d{4}$/.test(val));
+					if (!hasDate) {
+						const carryOverVal = lastRow.data[lastRow.data.length - 2];
+						const carryOverMin = parseCarryOverMinutes(carryOverVal);
+						chrome.storage.local.set({ carryOverMinutes: carryOverMin });
+					}
+				}
+			}
+
 			if (changed) {
 				chrome.storage.local.set({ overtimeDays });
 			}
 		});
+	}
+
+	function parseCarryOverMinutes(val) {
+		if (val === undefined || val === null) return 0;
+		const str = String(val).trim().replace(/\s+/g, '');
+		if (!str) return 0;
+
+		const isNegative = str.startsWith('-');
+		const absoluteStr = isNegative ? str.substring(1) : str;
+
+		let minutes = 0;
+		if (absoluteStr.includes(':')) {
+			const parts = absoluteStr.split(':');
+			const h = parseInt(parts[0], 10) || 0;
+			const m = parseInt(parts[1], 10) || 0;
+			minutes = h * 60 + m;
+		} else {
+			const floatVal = parseFloat(absoluteStr.replace(',', '.'));
+			if (!isNaN(floatVal)) {
+				minutes = Math.round(floatVal * 60);
+			}
+		}
+
+		return isNegative ? -minutes : minutes;
 	}
 
 	window.delProp.onCoreReady(() => {

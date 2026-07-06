@@ -59,6 +59,9 @@
             </select>
           </div>
         </label>
+        <button type="button" id="restoreNewsBtn" class="btn-secondary" style="width: 100%; justify-content: center; margin-top: 8px;">
+          🔄 Восстановить скрытые новости
+        </button>
       </fieldset>
 
       <fieldset id="change" class="card">
@@ -175,6 +178,13 @@
             </select>
           </div>
         </label>
+        <div class="header-icon-selection collapse-section" id="header-icon-selection-section" style="margin-top: 8px; margin-bottom: 8px;">
+          <label class="field-label" style="margin-bottom: 6px;">Значок в шапке</label>
+          <div class="emoji-grid" id="emoji-grid">
+            <!-- Will be dynamically populated in popup.js -->
+          </div>
+          <input type="hidden" id="userIcon" name="userIcon" value="👤">
+        </div>
         <label class="toggle-label">
           Переработки в отгулы
           <div class="select-wrapper">
@@ -275,12 +285,16 @@
         
         <div class="comp-summary">
           <div class="comp-summary-card">
-            <span class="comp-summary-title">Всего накоплено</span>
-            <span class="comp-summary-value" id="comp-total">0ч 0м</span>
+            <span class="comp-summary-title">Начальный баланс</span>
+            <span class="comp-summary-value" id="comp-carryover">0ч 0м</span>
           </div>
           <div class="comp-summary-card">
             <span class="comp-summary-title">В этом месяце</span>
             <span class="comp-summary-value" id="comp-month">0ч 0м</span>
+          </div>
+          <div class="comp-summary-card">
+            <span class="comp-summary-title">Всего накоплено</span>
+            <span class="comp-summary-value" id="comp-total">0ч 0м</span>
           </div>
         </div>
 
