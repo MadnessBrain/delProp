@@ -578,6 +578,130 @@ document.getElementById('clearCompDb').addEventListener('click', () => {
 	}
 });
 
+// Export to Excel listener
+document.getElementById('exportExcelBtn').addEventListener('click', () => {
+	exportToExcel();
+});
+
+function exportToExcel() {
+	const filterDropdown = document.getElementById('comp-month-filter');
+	if (!filterDropdown) return;
+	let selectedVal = filterDropdown.value;
+
+	chrome.storage.local.get(['overtimeDays', 'user'], (data) => {
+		const overtimeDays = data.overtimeDays || {};
+		const user = data.user || {};
+		const employeeName = user.fio || 'Сотрудник';
+
+		let year, month;
+		if (selectedVal === 'all') {
+			const now = new Date();
+			year = now.getFullYear();
+			month = now.getMonth();
+		} else {
+			const parts = selectedVal.split('-');
+			year = parseInt(parts[0], 10);
+			month = parseInt(parts[1], 10) - 1;
+		}
+
+		const monthsRU = [
+			"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+			"Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+		];
+		const monthNameRU = monthsRU[month];
+
+		const daysInMonth = new Date(year, month + 1, 0).getDate();
+		const weekdays = [];
+		const weekdayNamesRU = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
+
+		for (let d = 1; d <= daysInMonth; d++) {
+			const dateObj = new Date(year, month, d);
+			const dayOfWeek = dateObj.getDay();
+			if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+				weekdays.push({
+					day: d,
+					dateObj: dateObj,
+					weekdayStr: weekdayNamesRU[dayOfWeek]
+				});
+			}
+		}
+
+		const sheetData = {};
+		
+		sheetData['A1'] = { v: employeeName, t: 's' };
+		sheetData['C1'] = { v: 'Время в отгулы', t: 's' };
+		
+		sheetData['C2'] = { v: 'Начало', t: 's' };
+		sheetData['D2'] = { v: 'Конец', t: 's' };
+		sheetData['E2'] = { v: 'Сумма', t: 's' };
+
+		let totalDurationMin = 0;
+
+		weekdays.forEach((wd, index) => {
+			const rowIndex = 3 + index;
+			
+			const yyyy = year;
+			const mm = String(month + 1).padStart(2, '0');
+			const dd = String(wd.day).padStart(2, '0');
+			const dateKey = `${yyyy}-${mm}-${dd}`;
+
+			const excelEpoch = new Date(1899, 11, 30).getTime();
+			const serialDate = Math.round((wd.dateObj.getTime() - excelEpoch) / (24 * 60 * 60 * 1000));
+
+			sheetData[`A${rowIndex}`] = { v: serialDate, t: 'n', z: 'dd.mm.yyyy' };
+			sheetData[`B${rowIndex}`] = { v: wd.weekdayStr, t: 's' };
+
+			const dayData = overtimeDays[dateKey];
+			if (dayData && dayData.minutes > 0 && dayData.slots && dayData.slots.length > 0) {
+				const startMin = dayData.slots[0];
+				const endMin = dayData.slots[dayData.slots.length - 1] + 1;
+				const durationMin = dayData.minutes;
+
+				totalDurationMin += durationMin;
+
+				sheetData[`C${rowIndex}`] = { v: startMin / 1440, t: 'n', z: 'hh:mm' };
+				sheetData[`D${rowIndex}`] = { v: endMin / 1440, t: 'n', z: 'hh:mm' };
+				sheetData[`E${rowIndex}`] = { v: durationMin / 1440, t: 'n', z: 'hh:mm' };
+			} else {
+				sheetData[`C${rowIndex}`] = { v: null, t: 'z' };
+				sheetData[`D${rowIndex}`] = { v: null, t: 'z' };
+				sheetData[`E${rowIndex}`] = { v: '', t: 's' };
+			}
+		});
+
+		const lastDataRow = 2 + weekdays.length;
+		const totalRowIndex = lastDataRow + 2;
+		
+		sheetData[`D${totalRowIndex}`] = { v: 'ИТОГ', t: 's' };
+		sheetData[`E${totalRowIndex}`] = { 
+			f: `SUM(E3:E${lastDataRow})`, 
+			v: totalDurationMin / 1440, 
+			t: 'n', 
+			z: 'hh:mm' 
+		};
+
+		const nameRowIndex = totalRowIndex + 2;
+		sheetData[`A${nameRowIndex}`] = { v: employeeName, t: 's' };
+
+		sheetData['!ref'] = `A1:E${nameRowIndex}`;
+
+		sheetData['!cols'] = [
+			{ wch: 12 },
+			{ wch: 6 },
+			{ wch: 10 },
+			{ wch: 10 },
+			{ wch: 10 }
+		];
+
+		const wb = XLSX.utils.book_new();
+		wb.SheetNames.push('Лист1');
+		wb.Sheets['Лист1'] = sheetData;
+
+		const filename = `${employeeName} ${monthNameRU} ${year}. (Время отгулов).xlsx`;
+		XLSX.writeFile(wb, filename);
+	});
+}
+
 function initEmojiGrid() {
 	const grid = document.getElementById('emoji-grid');
 	const input = document.getElementById('userIcon');

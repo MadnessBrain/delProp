@@ -143,7 +143,7 @@ function copyFile(srcPath, destPath) {
 }
 
 // Copy and build Full version
-const ignoreList = ['.git', '.agents', 'dist', 'spy', 'build.js', '.gitignore', 'CHANGELOG.md', 'task.md', 'walkthrough.md', 'implementation_plan.md', 'README.md', 'Thumbs.db'];
+const ignoreList = ['.git', '.agents', 'dist', 'spy', 'build.js', '.gitignore', 'CHANGELOG.md', 'task.md', 'walkthrough.md', 'implementation_plan.md', 'README.md', 'Thumbs.db', 'node_modules', 'package.json', 'package-lock.json'];
 
 function copyRecursiveFull(src, dest) {
 	const basename = path.basename(src);
