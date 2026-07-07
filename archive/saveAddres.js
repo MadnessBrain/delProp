@@ -143,3 +143,54 @@ const mainObserver = new MutationObserver(mutations => {
 
 // Document-level event delegation for clicks (tab switching)
 document.addEventListener('click', handleTabClick);
+
+// Inject bridge script to page context to call native archive functions
+const bridgeScript = document.createElement("script");
+bridgeScript.textContent = `
+	document.addEventListener("delPropTrigger", (e) => {
+		const { action } = e.detail;
+		if (typeof MainTabBar === 'undefined' || typeof GetTabIndexByTabID === 'undefined') return;
+		const actvId = MainTabBar.getActiveTab();
+		if (!actvId) return;
+		const main_tab_id = GetTabIndexByTabID(actvId);
+		
+		if (action === "copyLinkChat" && typeof CopyLinkToBufferChat === 'function') {
+			CopyLinkToBufferChat(parseInt(main_tab_id));
+		} else if (action === "copyLinkEmail" && typeof CopyLinkToBufferEmail === 'function') {
+			CopyLinkToBufferEmail(parseInt(main_tab_id));
+		} else if (action === "copyLinkDirect" && typeof CopyLinkToBuffer === 'function') {
+			CopyLinkToBuffer(parseInt(main_tab_id));
+		} else if (action === "copyMD5" && typeof CopyMD5toBuffer === 'function') {
+			CopyMD5toBuffer();
+		} else if (action === "downloadZip" && typeof DownloadZip === 'function' && typeof GetCurrentDocID === 'function' && typeof GetCurrentDocName === 'function') {
+			const doc_id = GetCurrentDocID();
+			const doc_name = GetCurrentDocName();
+			DownloadZip(doc_name, doc_id);
+		}
+	});
+`;
+document.documentElement.appendChild(bridgeScript);
+bridgeScript.remove();
+
+// Key listener for shortcuts
+document.addEventListener('keydown', (e) => {
+	if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+		const code = e.keyCode;
+		if (code === 67) { // Alt + C
+			e.preventDefault();
+			document.dispatchEvent(new CustomEvent("delPropTrigger", { detail: { action: "copyLinkChat" } }));
+		} else if (code === 69) { // Alt + E
+			e.preventDefault();
+			document.dispatchEvent(new CustomEvent("delPropTrigger", { detail: { action: "copyLinkEmail" } }));
+		} else if (code === 76) { // Alt + L
+			e.preventDefault();
+			document.dispatchEvent(new CustomEvent("delPropTrigger", { detail: { action: "copyLinkDirect" } }));
+		} else if (code === 77) { // Alt + M
+			e.preventDefault();
+			document.dispatchEvent(new CustomEvent("delPropTrigger", { detail: { action: "copyMD5" } }));
+		} else if (code === 90) { // Alt + Z
+			e.preventDefault();
+			document.dispatchEvent(new CustomEvent("delPropTrigger", { detail: { action: "downloadZip" } }));
+		}
+	}
+});
