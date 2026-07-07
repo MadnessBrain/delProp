@@ -60,7 +60,7 @@ function processJS(srcPath, destPath, addIntegrityCheck = false) {
 	fs.mkdirSync(path.dirname(destPath), { recursive: true });
 	
 	// Minify first using esbuild
-	execSync(`npx -y esbuild "${srcPath}" --minify --outfile="${tempDest}"`, { stdio: 'inherit' });
+	execSync(`npx -y esbuild "${srcPath}" --bundle --minify --outfile="${tempDest}"`, { stdio: 'inherit' });
 	
 	// Read minified code and apply custom string obfuscation
 	const minifiedCode = fs.readFileSync(tempDest, 'utf8');
@@ -155,7 +155,23 @@ function copyRecursiveFull(src, dest) {
 			copyRecursiveFull(path.join(src, child), path.join(dest, child));
 		});
 	} else {
-		copyFile(src, dest);
+		if (src.endsWith('.js')) {
+			if (basename.includes('xlsx.full.min')) {
+				copyFile(src, dest);
+			} else if (src.includes('archive' + path.sep)) {
+				if (basename === 'saveAddres.js') {
+					console.log(`Bundling and minifying Archive script for Full version: ${src}`);
+					fs.mkdirSync(path.dirname(dest), { recursive: true });
+					execSync(`npx -y esbuild "${src}" --bundle --minify --outfile="${dest}"`, { stdio: 'inherit' });
+				}
+			} else {
+				console.log(`Minifying JS for Full version: ${src}`);
+				fs.mkdirSync(path.dirname(dest), { recursive: true });
+				execSync(`npx -y esbuild "${src}" --minify --outfile="${dest}"`, { stdio: 'inherit' });
+			}
+		} else {
+			copyFile(src, dest);
+		}
 	}
 }
 
