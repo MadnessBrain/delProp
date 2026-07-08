@@ -645,20 +645,71 @@ function exportToExcel() {
 			}
 		}
 
+		// STYLES DEFINITION
+		const borderThin = {
+			top: { style: 'thin', color: { rgb: '000000' } },
+			bottom: { style: 'thin', color: { rgb: '000000' } },
+			left: { style: 'thin', color: { rgb: '000000' } },
+			right: { style: 'thin', color: { rgb: '000000' } }
+		};
+
+		const styleTitle = {
+			font: { name: 'Arial', sz: 12, bold: true },
+			alignment: { horizontal: 'left', vertical: 'center' }
+		};
+
+		const styleHeaderMerged = {
+			font: { name: 'Arial', sz: 10, bold: true },
+			alignment: { horizontal: 'center', vertical: 'center' },
+			fill: { fgColor: { rgb: 'EAEAEA' } },
+			border: borderThin
+		};
+
+		const styleHeaderSub = {
+			font: { name: 'Arial', sz: 10, bold: true },
+			alignment: { horizontal: 'center', vertical: 'center' },
+			fill: { fgColor: { rgb: 'EAEAEA' } },
+			border: borderThin
+		};
+
+		const styleDataText = {
+			font: { name: 'Arial', sz: 10 },
+			alignment: { horizontal: 'center', vertical: 'center' },
+			border: borderThin
+		};
+
+		const styleTotalLabel = {
+			font: { name: 'Arial', sz: 10, bold: true },
+			alignment: { horizontal: 'right', vertical: 'center' },
+			border: borderThin
+		};
+
+		const styleTotalValue = {
+			font: { name: 'Arial', sz: 10, bold: true },
+			alignment: { horizontal: 'center', vertical: 'center' },
+			border: borderThin
+		};
+
 		const sheetData = {};
-		
-		sheetData['A1'] = { v: employeeName, t: 's' };
-		sheetData['C1'] = { v: 'Время в отгулы', t: 's' };
-		
-		sheetData['C2'] = { v: 'Начало', t: 's' };
-		sheetData['D2'] = { v: 'Конец', t: 's' };
-		sheetData['E2'] = { v: 'Сумма', t: 's' };
+
+		// Row 1
+		sheetData['A1'] = { v: employeeName, t: 's', s: styleTitle };
+		sheetData['C1'] = { v: 'Время в отгулы', t: 's', s: styleHeaderMerged };
+		// Merge cells C1:E1, so we should style D1 and E1 headers too for consistent border rendering
+		sheetData['D1'] = { v: '', t: 's', s: styleHeaderMerged };
+		sheetData['E1'] = { v: '', t: 's', s: styleHeaderMerged };
+
+		// Row 2
+		sheetData['A2'] = { v: 'Дата', t: 's', s: styleHeaderSub };
+		sheetData['B2'] = { v: 'День', t: 's', s: styleHeaderSub };
+		sheetData['C2'] = { v: 'Начало', t: 's', s: styleHeaderSub };
+		sheetData['D2'] = { v: 'Конец', t: 's', s: styleHeaderSub };
+		sheetData['E2'] = { v: 'Сумма', t: 's', s: styleHeaderSub };
 
 		let totalDurationMin = 0;
 
 		weekdays.forEach((wd, index) => {
 			const rowIndex = 3 + index;
-			
 			const yyyy = year;
 			const mm = String(month + 1).padStart(2, '0');
 			const dd = String(wd.day).padStart(2, '0');
@@ -667,8 +718,8 @@ function exportToExcel() {
 			const excelEpoch = new Date(1899, 11, 30).getTime();
 			const serialDate = Math.round((wd.dateObj.getTime() - excelEpoch) / (24 * 60 * 60 * 1000));
 
-			sheetData[`A${rowIndex}`] = { v: serialDate, t: 'n', z: 'dd.mm.yyyy' };
-			sheetData[`B${rowIndex}`] = { v: wd.weekdayStr, t: 's' };
+			sheetData[`A${rowIndex}`] = { v: serialDate, t: 'n', z: 'dd.mm.yyyy', s: styleDataText };
+			sheetData[`B${rowIndex}`] = { v: wd.weekdayStr, t: 's', s: styleDataText };
 
 			const dayData = overtimeDays[dateKey];
 			if (dayData && dayData.minutes > 0 && dayData.slots && dayData.slots.length > 0) {
@@ -678,31 +729,54 @@ function exportToExcel() {
 
 				totalDurationMin += durationMin;
 
-				sheetData[`C${rowIndex}`] = { v: startMin / 1440, t: 'n', z: 'hh:mm' };
-				sheetData[`D${rowIndex}`] = { v: endMin / 1440, t: 'n', z: 'hh:mm' };
-				sheetData[`E${rowIndex}`] = { v: durationMin / 1440, t: 'n', z: 'hh:mm' };
+				sheetData[`C${rowIndex}`] = { v: startMin / 1440, t: 'n', z: 'hh:mm', s: styleDataText };
+				sheetData[`D${rowIndex}`] = { v: endMin / 1440, t: 'n', z: 'hh:mm', s: styleDataText };
+				sheetData[`E${rowIndex}`] = { v: durationMin / 1440, t: 'n', z: 'hh:mm', s: styleDataText };
 			} else {
-				sheetData[`C${rowIndex}`] = { v: null, t: 'z' };
-				sheetData[`D${rowIndex}`] = { v: null, t: 'z' };
-				sheetData[`E${rowIndex}`] = { v: '', t: 's' };
+				sheetData[`C${rowIndex}`] = { v: '', t: 's', s: styleDataText };
+				sheetData[`D${rowIndex}`] = { v: '', t: 's', s: styleDataText };
+				sheetData[`E${rowIndex}`] = { v: '', t: 's', s: styleDataText };
 			}
 		});
 
 		const lastDataRow = 2 + weekdays.length;
-		const totalRowIndex = lastDataRow + 2;
 		
-		sheetData[`D${totalRowIndex}`] = { v: 'ИТОГ', t: 's' };
+		// Total row
+		const totalRowIndex = lastDataRow + 2;
+		sheetData[`A${totalRowIndex}`] = { v: '', t: 's', s: styleTotalLabel };
+		sheetData[`B${totalRowIndex}`] = { v: '', t: 's', s: styleTotalLabel };
+		sheetData[`C${totalRowIndex}`] = { v: '', t: 's', s: styleTotalLabel };
+		sheetData[`D${totalRowIndex}`] = { v: 'ИТОГ', t: 's', s: styleTotalLabel };
 		sheetData[`E${totalRowIndex}`] = { 
 			f: `SUM(E3:E${lastDataRow})`, 
 			v: totalDurationMin / 1440, 
 			t: 'n', 
-			z: 'hh:mm' 
+			z: '[h]:mm', 
+			s: styleTotalValue 
 		};
 
+		// Signature blocks
 		const nameRowIndex = totalRowIndex + 2;
-		sheetData[`A${nameRowIndex}`] = { v: employeeName, t: 's' };
+		sheetData[`A${nameRowIndex}`] = { v: employeeName, t: 's', s: { font: { name: 'Arial', sz: 11 } } };
+		const borderBottomOnly = {
+			bottom: { style: 'thin', color: { rgb: '000000' } }
+		};
+		sheetData[`D${nameRowIndex}`] = { v: '', t: 's', s: { border: borderBottomOnly } };
+		sheetData[`E${nameRowIndex}`] = { v: '', t: 's', s: { border: borderBottomOnly } };
 
-		sheetData['!ref'] = `A1:E${nameRowIndex}`;
+		const dateRowIndex = nameRowIndex + 1;
+		sheetData[`D${dateRowIndex}`] = { v: '', t: 's', s: { border: borderBottomOnly } };
+		sheetData[`E${dateRowIndex}`] = { v: '', t: 's', s: { border: borderBottomOnly } };
+
+		sheetData['!ref'] = `A1:E${dateRowIndex}`;
+
+		// Merges list
+		sheetData['!merges'] = [
+			{ s: { r: 0, c: 2 }, e: { r: 0, c: 4 } }, // C1:E1
+			{ s: { r: nameRowIndex - 1, c: 0 }, e: { r: nameRowIndex - 1, c: 2 } }, // A29:C29
+			{ s: { r: nameRowIndex - 1, c: 3 }, e: { r: nameRowIndex - 1, c: 4 } }, // D29:E29
+			{ s: { r: dateRowIndex - 1, c: 3 }, e: { r: dateRowIndex - 1, c: 4 } }  // D30:E30
+		];
 
 		sheetData['!cols'] = [
 			{ wch: 12 },
