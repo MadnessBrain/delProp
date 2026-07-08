@@ -221,3 +221,9 @@ window.initProjectFilter = function(treeContainer) {
 		window.applyFilter(treeContainer);
 	}
 };
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+	if (request.action === "clearTreeCache") {
+		document.dispatchEvent(new CustomEvent("delPropTrigger", { detail: { action: "clearTreeCache" } }));
+	}
+});

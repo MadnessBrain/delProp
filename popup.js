@@ -412,6 +412,25 @@ clearHashesBtn.addEventListener('click', () => {
 	})
 })
 
+// Clear tree cache logic
+const clearTreeCacheBtn = document.getElementById('clearTreeCacheBtn')
+if (clearTreeCacheBtn) {
+	clearTreeCacheBtn.addEventListener('click', () => {
+		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+			if (tabs[0]) {
+				chrome.tabs.sendMessage(tabs[0].id, { action: "clearTreeCache" });
+			}
+		});
+		const originalText = clearTreeCacheBtn.textContent;
+		clearTreeCacheBtn.textContent = '⚡ Кэш очищен!';
+		clearTreeCacheBtn.disabled = true;
+		setTimeout(() => {
+			clearTreeCacheBtn.textContent = originalText;
+			clearTreeCacheBtn.disabled = false;
+		}, 1500);
+	});
+}
+
 // Overtime / Comp Time logic
 const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
 const dayNames = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];

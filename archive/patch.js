@@ -1,10 +1,145 @@
 // archive/patch.js
+(function() {
+	const RealOpen = XMLHttpRequest.prototype.open;
+	const RealSend = XMLHttpRequest.prototype.send;
+
+	XMLHttpRequest.prototype.open = function(method, url, ...args) {
+		this._delpropMethod = method;
+		this._delpropUrl = url;
+		this._delpropIsCacheable = false;
+		
+		if (method.toUpperCase() === 'GET' && url.includes('show_tree.php')) {
+			try {
+				const urlObj = new URL(url, window.location.href);
+				const nodeId = urlObj.searchParams.get('id') || '';
+				if (nodeId && (nodeId.startsWith('project_') || nodeId === '0' || nodeId === 'root')) {
+					this._delpropIsCacheable = true;
+					this._delpropNodeId = nodeId;
+					this._delpropCacheKey = 'delprop_tree_cache_' + nodeId;
+				}
+			} catch (e) {
+				console.error("delProp: error parsing tree URL:", e);
+			}
+		}
+		return RealOpen.apply(this, [method, url, ...args]);
+	};
+
+	XMLHttpRequest.prototype.send = function(body) {
+		if (this._delpropIsCacheable) {
+			const cacheKey = this._delpropCacheKey;
+			const nodeId = this._delpropNodeId;
+			const url = this._delpropUrl;
+			const cachedData = localStorage.getItem(cacheKey);
+
+			if (cachedData) {
+				try {
+					const parsed = JSON.parse(cachedData);
+					const TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+					if (Date.now() - parsed.timestamp < TTL) {
+						Object.defineProperties(this, {
+							responseText: { value: parsed.data, writable: true },
+							responseXML: { 
+								value: new DOMParser().parseFromString(parsed.data, 'text/xml'), 
+								writable: true 
+							},
+							status: { value: 200, writable: true },
+							statusText: { value: 'OK', writable: true },
+							readyState: { value: 4, writable: true }
+						});
+
+						setTimeout(() => {
+							if (typeof this.onreadystatechange === 'function') {
+								this.onreadystatechange();
+							}
+							this.dispatchEvent(new Event('readystatechange'));
+							this.dispatchEvent(new Event('load'));
+						}, 0);
+
+						// Background revalidation (Stale-While-Revalidate)
+						setTimeout(() => {
+							revalidateCache(url, cacheKey, nodeId);
+						}, 100);
+						return;
+					}
+				} catch (e) {
+					console.error("delProp: error reading tree cache:", e);
+				}
+			}
+
+			this.addEventListener('load', () => {
+				if (this.status === 200 && this.responseText) {
+					try {
+						localStorage.setItem(cacheKey, JSON.stringify({
+							timestamp: Date.now(),
+							data: this.responseText
+						}));
+					} catch (e) {
+						console.error("delProp: error caching tree data:", e);
+					}
+				}
+			});
+		}
+		return RealSend.apply(this, [body]);
+	};
+
+	function revalidateCache(url, key, id) {
+		fetch(url)
+			.then(r => r.text())
+			.then(newXml => {
+				const cachedObjStr = localStorage.getItem(key);
+				let cachedXml = '';
+				if (cachedObjStr) {
+					try {
+						cachedXml = JSON.parse(cachedObjStr).data;
+					} catch(e) {}
+				}
+				
+				const normNew = newXml.replace(/\s+/g, ' ');
+				const normCached = cachedXml.replace(/\s+/g, ' ');
+
+				if (normNew !== normCached) {
+					localStorage.setItem(key, JSON.stringify({
+						timestamp: Date.now(),
+						data: newXml
+					}));
+
+					// Update tree dynamically
+					if (typeof MainTabBar !== 'undefined') {
+						const actvId = MainTabBar.getActiveTab();
+						if (actvId) {
+							const Layout = MainTabBar.cells(actvId).getAttachedObject();
+							if (Layout) {
+								const Tree = Layout.cells("a").getAttachedObject();
+								if (Tree && Tree._idpull[id] && Tree.getOpenState(id) === 1) {
+									const selectedId = Tree.getSelectedItemId();
+									Tree.deleteChildItems(id);
+									Tree.loadXMLString(newXml);
+									if (selectedId && Tree._idpull[selectedId]) {
+										Tree.selectItem(selectedId, false);
+									}
+								}
+							}
+						}
+					}
+				}
+			})
+			.catch(err => console.error("delProp: revalidation error:", err));
+	}
+})();
+
 document.addEventListener("delPropTrigger", (e) => {
 	const { action, query } = e.detail;
 	if (action === "smartSearch") {
 		window.searchAndExpandTree(query || "", false);
 	} else if (action === "smartSearchEnter") {
 		window.searchAndExpandTree(query || "", true);
+	} else if (action === "clearTreeCache") {
+		for (let i = localStorage.length - 1; i >= 0; i--) {
+			const key = localStorage.key(i);
+			if (key && key.startsWith('delprop_tree_cache_')) {
+				localStorage.removeItem(key);
+			}
+		}
 	} else if (typeof MainTabBar === 'undefined' || typeof GetTabIndexByTabID === 'undefined') {
 		return;
 	} else {
