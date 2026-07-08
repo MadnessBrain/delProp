@@ -10,31 +10,33 @@
 
 <body>
 
-  <div class="app-header">
-    <div class="app-logo">
-      <span class="logo-icon">⚡</span>
-      <div style="display: flex; flex-direction: column; line-height: 1.1;">
-        <span class="logo-text">del<strong>Prop</strong></span>
-        <span class="logo-copyright">© <a href="https://r-and-l.ru" target="_blank" class="logo-link">R&L</a></span>
+  <div class="header-container">
+    <div class="app-header">
+      <div class="app-logo">
+        <span class="logo-icon">⚡</span>
+        <div style="display: flex; flex-direction: column; line-height: 1.1;">
+          <span class="logo-text">del<strong>Prop</strong></span>
+          <span class="logo-copyright">© <a href="https://r-and-l.ru" target="_blank" class="logo-link">R&L</a></span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div class="user-badge" id="userBadge">
+          <span class="user-dot"></span>
+          <span class="user-name">Загрузка...</span>
+        </div>
+        <button type="button" class="settings-gear-btn" id="tab-btn-settings" role="tab" aria-selected="false"
+          aria-controls="tab-content-settings" title="Настройки">⚙️</button>
       </div>
     </div>
-    <div style="display: flex; align-items: center; gap: 10px;">
-      <div class="user-badge" id="userBadge">
-        <span class="user-dot"></span>
-        <span class="user-name">Загрузка...</span>
-      </div>
-      <button type="button" class="settings-gear-btn" id="tab-btn-settings" role="tab" aria-selected="false"
-        aria-controls="tab-content-settings" title="Настройки">⚙️</button>
-    </div>
-  </div>
 
-  <div class="tab-navigation" role="tablist">
-    <button type="button" class="tab-btn active" id="tab-btn-general" role="tab" aria-selected="true"
-      aria-controls="tab-content-general">🌐 Портал</button>
-    <button type="button" class="tab-btn" id="tab-btn-archive" role="tab" aria-selected="false"
-      aria-controls="tab-content-archive">🗄️ Архив</button>
-    <button type="button" class="tab-btn" id="tab-btn-comp" role="tab" aria-selected="false"
-      aria-controls="tab-content-comp">📅 Отгулы</button>
+    <div class="tab-navigation" role="tablist">
+      <button type="button" class="tab-btn active" id="tab-btn-general" role="tab" aria-selected="true"
+        aria-controls="tab-content-general">🌐 Портал</button>
+      <button type="button" class="tab-btn" id="tab-btn-archive" role="tab" aria-selected="false"
+        aria-controls="tab-content-archive">🗄️ Архив</button>
+      <button type="button" class="tab-btn" id="tab-btn-comp" role="tab" aria-selected="false"
+        aria-controls="tab-content-comp">📅 Отгулы</button>
+    </div>
   </div>
 
   <form name="my">

@@ -61,6 +61,15 @@ body::-webkit-scrollbar-thumb {
 /* ============================
    HEADER
    ============================ */
+.header-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-dark);
+  display: flex;
+  flex-direction: column;
+}
+
 .app-header {
   display: flex;
   align-items: center;
@@ -68,9 +77,6 @@ body::-webkit-scrollbar-thumb {
   padding: 12px 16px;
   background: linear-gradient(135deg, rgba(16, 200, 233, 0.12), rgba(64, 233, 177, 0.06));
   border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 101;
   backdrop-filter: blur(8px);
 }
 
@@ -647,9 +653,6 @@ option {
    TABS SYSTEM
    ============================ */
 .tab-navigation {
-  position: sticky;
-  top: 48px;
-  z-index: 100;
   display: flex;
   background: rgba(15, 17, 23, 0.9);
   backdrop-filter: blur(10px);
