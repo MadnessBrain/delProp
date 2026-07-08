@@ -214,7 +214,16 @@
 			cola: ['Суббота же', 'Вот тебе Кола', 'А я домой!'],
 			bottle: ['Суббота же', 'Вот бутылка', 'А я домой!'],
 			stopwatch: ['Суббота же', 'Время отдыхать', 'А я домой!'],
-			sun: ['Суббота же', 'Солнце светит для отдыха', 'А я домой!']
+			sun: ['Суббота же', 'Солнце светит для отдыха', 'А я домой!'],
+			rocket: ['Суббота же', 'Полеты отложены', 'А я домой!'],
+			plant: ['Суббота же', 'Полив завершен', 'А я домой!'],
+			battery: ['Суббота же', 'Зарядка 100%', 'А я домой!'],
+			kettle: ['Суббота же', 'Чай заварен!', 'А я домой!'],
+			pizza: ['Суббота же', 'Пицца съедена!', 'А я домой!'],
+			popcorn: ['Суббота же', 'Кино закончилось!', 'А я домой!'],
+			wine: ['Суббота же', 'Выходные начались!', 'А я домой!'],
+			car: ['Суббота же', 'Маршрут завершен!', 'А я домой!'],
+			stars: ['Суббота же', 'Звезды светят для отдыха', 'А я домой!']
 		};
 		const satMsg = satMsgs[theme] || satMsgs.beer;
 
@@ -224,7 +233,16 @@
 			cola: ['Кола налита!', 'Пора домой!!'],
 			bottle: ['Бутылка полна!', 'Пора домой!!'],
 			stopwatch: ['Время вышло!', 'Пора домой!!'],
-			sun: ['Солнце село!', 'Пора домой!!']
+			sun: ['Солнце село!', 'Пора домой!!'],
+			rocket: ['Ракета в космосе!', 'Пора домой!!'],
+			plant: ['Росток вырос!', 'Пора домой!!'],
+			battery: ['Заряжено на 100%!', 'Пора домой!!'],
+			kettle: ['Чайник закипел!', 'Пора домой!!'],
+			pizza: ['Пицца готова!', 'Пора домой!!'],
+			popcorn: ['Ведро полно!', 'Пора домой!!'],
+			wine: ['Бокал полон!', 'Пора домой!!'],
+			car: ['Финишная черта!', 'Пора домой!!'],
+			stars: ['Звездное небо!', 'Пора домой!!']
 		};
 		const finishMsg = finishMsgs[theme] || finishMsgs.beer;
 
@@ -463,6 +481,83 @@
 				if (batteryPercent) {
 					batteryPercent.textContent = `${percent}%`;
 				}
+			} else if (theme === 'kettle') {
+				const water = root.querySelector('.kettle-water');
+				const steam = root.querySelector('.kettle-steam');
+				if (water) {
+					water.style.height = `${percent}%`;
+				}
+				if (steam) {
+					steam.style.display = percent > 65 ? 'block' : 'none';
+					steam.style.opacity = Math.min(1, (percent - 65) / 35).toFixed(2);
+				}
+				const kettlePercent = root.querySelector('#kettle-percent');
+				if (kettlePercent) {
+					kettlePercent.textContent = `${percent}%`;
+				}
+			} else if (theme === 'pizza') {
+				const crust = root.querySelector('.pizza-crust');
+				if (crust) {
+					const sepia = (percent / 100) * 0.4;
+					const saturate = 1 + (percent / 100) * 0.8;
+					const brightness = 1 - (percent / 100) * 0.15;
+					crust.style.filter = `sepia(${sepia}) saturate(${saturate}) brightness(${brightness})`;
+				}
+				const pep1 = root.querySelector('.pep-1');
+				const pep2 = root.querySelector('.pep-2');
+				const pep3 = root.querySelector('.pep-3');
+				const pep4 = root.querySelector('.pep-4');
+				if (pep1) pep1.style.display = percent > 20 ? 'block' : 'none';
+				if (pep2) pep2.style.display = percent > 40 ? 'block' : 'none';
+				if (pep3) pep3.style.display = percent > 60 ? 'block' : 'none';
+				if (pep4) pep4.style.display = percent > 80 ? 'block' : 'none';
+				const pizzaPercent = root.querySelector('#pizza-percent');
+				if (pizzaPercent) {
+					pizzaPercent.textContent = `${percent}%`;
+				}
+			} else if (theme === 'popcorn') {
+				const fill = root.querySelector('.popcorn-fill');
+				if (fill) {
+					fill.style.height = `${percent}%`;
+				}
+				const popcornPercent = root.querySelector('#popcorn-percent');
+				if (popcornPercent) {
+					popcornPercent.textContent = `${percent}%`;
+				}
+			} else if (theme === 'wine') {
+				const liquid = root.querySelector('.wine-liquid');
+				if (liquid) {
+					liquid.style.height = `${percent}%`;
+				}
+				const winePercent = root.querySelector('#wine-percent');
+				if (winePercent) {
+					winePercent.textContent = `${percent}%`;
+				}
+			} else if (theme === 'car') {
+				const carEl = root.querySelector('.car-element');
+				if (carEl) {
+					const b = 10 + (percent / 100) * 180;
+					carEl.style.bottom = `${b}px`;
+				}
+				const carPercent = root.querySelector('#car-percent');
+				if (carPercent) {
+					carPercent.textContent = `${percent}%`;
+				}
+			} else if (theme === 'stars') {
+				const moon = root.querySelector('.moon');
+				if (moon) {
+					moon.style.opacity = percent > 10 ? (percent / 100).toFixed(2) : 0;
+				}
+				for (let i = 1; i <= 8; i++) {
+					const star = root.querySelector(`.star-${i}`);
+					if (star) {
+						star.style.display = percent >= (i * 12) ? 'block' : 'none';
+					}
+				}
+				const starsPercent = root.querySelector('#stars-percent');
+				if (starsPercent) {
+					starsPercent.textContent = `${percent}%`;
+				}
 			}
 
 			changeWrapperTimer = setTimeout(changeWrapper, delay);
@@ -546,6 +641,70 @@
 							<div class="battery-fill"></div>
 							<div class="battery-flash">⚡</div>
 							<span id="battery-percent" class="battery-percent">0%</span>
+						</div>
+					</div>
+					<div class="kettle-container">
+						<div class="kettle-body">
+							<div class="kettle-water"></div>
+							<div class="kettle-steam">💨</div>
+							<span id="kettle-percent" class="kettle-percent">0%</span>
+						</div>
+						<div class="kettle-handle"></div>
+						<div class="kettle-spout"></div>
+					</div>
+					<div class="pizza-container">
+						<div class="pizza-oven">
+							<div class="pizza-board">
+								<div class="pizza-crust">
+									<div class="pizza-cheese">
+										<div class="pep pep-1"></div>
+										<div class="pep pep-2"></div>
+										<div class="pep pep-3"></div>
+										<div class="pep pep-4"></div>
+									</div>
+								</div>
+							</div>
+							<span id="pizza-percent" class="pizza-percent">0%</span>
+						</div>
+					</div>
+					<div class="popcorn-container">
+						<div class="popcorn-bucket">
+							<div class="popcorn-fill">
+								<div class="popcorn-kernels">🍿🍿🍿🍿🍿</div>
+							</div>
+							<span id="popcorn-percent" class="popcorn-percent">0%</span>
+						</div>
+					</div>
+					<div class="wine-container">
+						<div class="wine-glass-body">
+							<div class="wine-liquid"></div>
+							<span id="wine-percent" class="wine-percent">0%</span>
+						</div>
+						<div class="wine-stem"></div>
+						<div class="wine-base"></div>
+					</div>
+					<div class="car-container">
+						<div class="highway">
+							<div class="road-line"></div>
+							<div class="road-line"></div>
+							<div class="road-line"></div>
+							<div class="finish-line">🏁</div>
+							<div class="car-element">🚗</div>
+							<span id="car-percent" class="car-percent">0%</span>
+						</div>
+					</div>
+					<div class="stars-container">
+						<div class="night-sky">
+							<div class="moon">🌙</div>
+							<div class="star star-1">⭐</div>
+							<div class="star star-2">⭐</div>
+							<div class="star star-3">⭐</div>
+							<div class="star star-4">⭐</div>
+							<div class="star star-5">⭐</div>
+							<div class="star star-6">⭐</div>
+							<div class="star star-7">⭐</div>
+							<div class="star star-8">⭐</div>
+							<span id="stars-percent" class="stars-percent">0%</span>
 						</div>
 					</div>
 				</div>

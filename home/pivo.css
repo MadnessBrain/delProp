@@ -251,7 +251,7 @@ div .dot {
 /* ==============================
    ДОПОЛНИТЕЛЬНЫЕ ЭЛЕМЕНТЫ (ПО УМОЛЧАНИЮ СКРЫТЫ)
    ============================== */
-.bottle-neck, .stopwatch-top, .sun-arc-container, .rocket-container, .plant-container, .battery-container {
+.bottle-neck, .stopwatch-top, .sun-arc-container, .rocket-container, .plant-container, .battery-container, .kettle-container, .pizza-container, .popcorn-container, .wine-container, .car-container, .stars-container {
     display: none;
 }
 
@@ -460,20 +460,44 @@ div .dot {
 }
 
 /* ==============================
-   HIDES FOR ROCKET, PLANT, BATTERY
+   HIDES FOR ROCKET, PLANT, BATTERY, KETTLE, PIZZA, POPCORN, WINE, CAR, STARS
    ============================== */
 .theme-rocket .glass_container,
 .theme-plant .glass_container,
 .theme-battery .glass_container,
+.theme-kettle .glass_container,
+.theme-pizza .glass_container,
+.theme-popcorn .glass_container,
+.theme-wine .glass_container,
+.theme-car .glass_container,
+.theme-stars .glass_container,
 .theme-rocket .handle,
 .theme-plant .handle,
 .theme-battery .handle,
+.theme-kettle .handle,
+.theme-pizza .handle,
+.theme-popcorn .handle,
+.theme-wine .handle,
+.theme-car .handle,
+.theme-stars .handle,
 .theme-rocket .glass_grooves,
 .theme-plant .glass_grooves,
 .theme-battery .glass_grooves,
+.theme-kettle .glass_grooves,
+.theme-pizza .glass_grooves,
+.theme-popcorn .glass_grooves,
+.theme-wine .glass_grooves,
+.theme-car .glass_grooves,
+.theme-stars .glass_grooves,
 .theme-rocket .foam,
 .theme-plant .foam,
-.theme-battery .foam {
+.theme-battery .foam,
+.theme-kettle .foam,
+.theme-pizza .foam,
+.theme-popcorn .foam,
+.theme-wine .foam,
+.theme-car .foam,
+.theme-stars .foam {
     display: none;
 }
 
@@ -674,4 +698,406 @@ div .dot {
     color: #fff;
     text-shadow: 0 1px 4px rgba(0,0,0,0.6);
     z-index: 6;
+}
+
+/* ==============================
+   ТЕМА: ЧАЙНИК (🫖)
+   ============================== */
+.theme-kettle .kettle-container {
+    display: block;
+    position: absolute;
+    width: 140px;
+    height: 250px;
+    top: 0;
+    left: 0;
+}
+.theme-kettle .kettle-body {
+    position: relative;
+    width: 110px;
+    height: 180px;
+    bottom: -60px;
+    left: 5px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
+    border: 4px solid rgba(200, 200, 200, 0.7);
+    border-radius: 40px 40px 15px 15px;
+    overflow: hidden;
+    z-index: 3;
+    box-shadow: inset 5px 0 10px rgba(255,255,255,0.3);
+}
+.theme-kettle .kettle-water {
+    position: absolute;
+    width: 100%;
+    height: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(180deg, #aed6f1 0%, #3498db 100%);
+    transition: height 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.theme-kettle .kettle-steam {
+    position: absolute;
+    top: 10px;
+    right: -25px;
+    font-size: 28px;
+    z-index: 5;
+    display: none;
+    animation: steam-float 2s ease-in-out infinite;
+}
+.theme-kettle .kettle-handle {
+    display: block;
+    position: absolute;
+    width: 32px;
+    height: 110px;
+    bottom: 95px;
+    left: -20px;
+    border: 8px solid rgba(150, 150, 150, 0.8);
+    border-right: none;
+    border-radius: 25px 0 0 25px;
+    z-index: 2;
+}
+.theme-kettle .kettle-spout {
+    display: block;
+    position: absolute;
+    width: 25px;
+    height: 60px;
+    bottom: 155px;
+    right: 12px;
+    background: rgba(180, 180, 180, 0.8);
+    border: 4px solid rgba(150, 150, 150, 0.8);
+    border-left: none;
+    border-bottom: none;
+    border-radius: 0 15px 0 0;
+    transform: rotate(25deg);
+    z-index: 2;
+}
+.theme-kettle .kettle-percent {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    z-index: 6;
+}
+
+/* ==============================
+   ТЕМА: ПИЦЦА (🍕)
+   ============================== */
+.theme-pizza .pizza-container {
+    display: block;
+    position: absolute;
+    width: 140px;
+    height: 250px;
+    top: 0;
+    left: 0;
+    background: linear-gradient(180deg, #2c3e50 0%, #0f171e 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 3.5px solid rgba(255, 255, 255, 0.1);
+}
+.theme-pizza .pizza-oven {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.theme-pizza .pizza-board {
+    width: 110px;
+    height: 110px;
+    background: #d7ccc8;
+    border: 6px solid #8d6e63;
+    border-radius: 50%;
+    padding: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.theme-pizza .pizza-crust {
+    width: 100%;
+    height: 100%;
+    background: #ffe0b2;
+    border: 6px solid #ffcc80;
+    border-radius: 50%;
+    padding: 3px;
+    transition: filter 1.5s ease;
+}
+.theme-pizza .pizza-cheese {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #ffeb3b;
+    border-radius: 50%;
+}
+.theme-pizza .pep {
+    display: none;
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: #c62828;
+    border-radius: 50%;
+    border: 1px solid #7f0000;
+}
+.theme-pizza .pep-1 { top: 12px; left: 16px; }
+.theme-pizza .pep-2 { top: 15px; right: 20px; }
+.theme-pizza .pep-3 { bottom: 18px; left: 24px; }
+.theme-pizza .pep-4 { bottom: 14px; right: 16px; }
+.theme-pizza .pizza-percent {
+    margin-top: 15px;
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffeb3b;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+}
+
+/* ==============================
+   ТЕМА: ПОПКОРН (🍿)
+   ============================== */
+.theme-popcorn .popcorn-container {
+    display: block;
+    position: absolute;
+    width: 140px;
+    height: 250px;
+    top: 0;
+    left: 0;
+}
+.theme-popcorn .popcorn-bucket {
+    position: absolute;
+    width: 100px;
+    height: 160px;
+    bottom: 30px;
+    left: 20px;
+    background: repeating-linear-gradient(90deg, #ff1744, #ff1744 10px, #ffffff 10px, #ffffff 20px);
+    border: 4px solid #d50000;
+    border-top: none;
+    border-radius: 0 0 15px 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+.theme-popcorn .popcorn-fill {
+    position: absolute;
+    width: 100%;
+    height: 0;
+    bottom: 0;
+    left: 0;
+    background: #ffe082;
+    border-top: 5px solid #ffca28;
+    transition: height 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.theme-popcorn .popcorn-kernels {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    width: 100px;
+    text-align: center;
+    white-space: nowrap;
+    letter-spacing: -2px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.theme-popcorn .popcorn-percent {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: 800;
+    color: #d50000;
+    background: rgba(255,255,255,0.85);
+    padding: 2px 6px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    z-index: 5;
+}
+
+/* ==============================
+   ТЕМА: ВИНО (🍷)
+   ============================== */
+.theme-wine .wine-container {
+    display: block;
+    position: absolute;
+    width: 140px;
+    height: 250px;
+    top: 0;
+    left: 0;
+}
+.theme-wine .wine-glass-body {
+    position: absolute;
+    width: 100px;
+    height: 120px;
+    top: 40px;
+    left: 20px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+    border: 3px solid rgba(220, 220, 220, 0.5);
+    border-radius: 10px 10px 50px 50px;
+    overflow: hidden;
+    z-index: 3;
+    box-shadow: inset 6px 0 12px rgba(255,255,255,0.2);
+}
+.theme-wine .wine-liquid {
+    position: absolute;
+    width: 100%;
+    height: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(180deg, #7f1d1d 0%, #450a0a 100%);
+    transition: height 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.theme-wine .wine-stem {
+    display: block;
+    position: absolute;
+    width: 6px;
+    height: 60px;
+    top: 160px;
+    left: 67px;
+    background: rgba(220,220,220,0.5);
+    z-index: 2;
+}
+.theme-wine .wine-base {
+    display: block;
+    position: absolute;
+    width: 70px;
+    height: 8px;
+    top: 220px;
+    left: 35px;
+    background: rgba(220,220,220,0.5);
+    border-radius: 50% 50% 0 0;
+    z-index: 2;
+}
+.theme-wine .wine-percent {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    z-index: 5;
+}
+
+/* ==============================
+   ТЕМА: МАШИНА (🚗)
+   ============================== */
+.theme-car .car-container {
+    display: block;
+    position: absolute;
+    width: 140px;
+    height: 250px;
+    top: 0;
+    left: 0;
+    background: #424242;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 3.5px solid rgba(255,255,255,0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+.theme-car .highway {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.theme-car .road-line {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 40px;
+    background: #ffeb3b;
+    opacity: 0.5;
+}
+.theme-car .road-line:nth-child(1) { top: 20px; }
+.theme-car .road-line:nth-child(2) { top: 100px; }
+.theme-car .road-line:nth-child(3) { top: 180px; }
+.theme-car .finish-line {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    z-index: 4;
+}
+.theme-car .car-element {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
+    transition: bottom 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 5;
+}
+.theme-car .car-percent {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #ffeb3b;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    z-index: 6;
+}
+
+/* ==============================
+   ТЕМА: ЗВЕЗДЫ (🌌)
+   ============================== */
+.theme-stars .stars-container {
+    display: block;
+    position: absolute;
+    width: 140px;
+    height: 250px;
+    top: 0;
+    left: 0;
+    background: linear-gradient(180deg, #090a0f 0%, #151821 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 3.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+.theme-stars .night-sky {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.theme-stars .moon {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    font-size: 28px;
+    transition: opacity 1.5s ease;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
+}
+.theme-stars .star {
+    display: none;
+    position: absolute;
+    font-size: 12px;
+    filter: drop-shadow(0 0 4px rgba(255, 235, 59, 0.8));
+    animation: star-blink 2.5s infinite alternate;
+}
+.theme-stars .star-1 { top: 50px; left: 25px; animation-delay: 0.1s; }
+.theme-stars .star-2 { top: 90px; left: 80px; animation-delay: 0.5s; }
+.theme-stars .star-3 { top: 130px; left: 35px; animation-delay: 0.3s; }
+.theme-stars .star-4 { top: 160px; right: 30px; animation-delay: 0.7s; }
+.theme-stars .star-5 { top: 70px; left: 55px; animation-delay: 0.2s; }
+.theme-stars .star-6 { top: 110px; left: 20px; animation-delay: 0.6s; }
+.theme-stars .star-7 { top: 190px; left: 65px; animation-delay: 0.4s; }
+.theme-stars .star-8 { top: 220px; right: 40px; animation-delay: 0.8s; }
+.theme-stars .stars-percent {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    font-weight: 800;
+    color: #e2e8f0;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    z-index: 6;
+}
+@keyframes steam-float {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.5; }
+    50% { transform: translateY(-10px) scale(1.1); opacity: 0.9; }
+}
+@keyframes star-blink {
+    0% { opacity: 0.3; }
+    100% { opacity: 1; }
 }
