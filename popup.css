@@ -229,6 +229,7 @@ form {
   color: var(--text-label);
   cursor: default;
   gap: 8px;
+  margin-bottom: 12px;
 }
 
 /* ============================
