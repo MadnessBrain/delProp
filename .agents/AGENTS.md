@@ -3,9 +3,7 @@
 This file contains behavioral constraints and rules for working in the **delProp** repository.
 
 ## Versioning & Changelog
-1. **Accumulate Changes**: Do not bump versions, update `CHANGELOG.md`, or add a custom news item to `db.json` for every minor change or feature. Instead, accumulate approximately 5 updates/fixes, and then release a single major/consolidated update.
-2. **Consolidated Update**: When releasing a consolidated update:
-   - Increment the app version string in [manifest.json](file:///d:/Projects/delProp/manifest.json) under the `"version"` key.
-   - Document all accumulated changes in [CHANGELOG.md](file:///d:/Projects/delProp/CHANGELOG.md) in Russian.
-   - Append a single new custom news item describing the consolidated changes to [db.json](file:///d:/Projects/delProp/db/db.json) under `"custom_news"`. Ensure the news item has a unique `"id"`.
-3. **Commit Changes**: Make sure to commit all source code edits, version bumps, changelog updates, and database updates together in git.
+1. **Version and Changelog on Every Change**: Always increment the app version in [manifest.json](file:///d:/Projects/delProp/manifest.json) under the `"version"` key and document all modifications in [CHANGELOG.md](file:///d:/Projects/delProp/CHANGELOG.md) (in Russian) for every change/feature.
+2. **Custom News on Demand**: Do NOT add new custom news items to [db.json](file:///d:/Projects/delProp/db/db.json) automatically. Only write a news item when the user explicitly requests to do so.
+3. **Detailed News Compilation**: When requested, compile all changes logged in `CHANGELOG.md` since the last news item's version, structure them beautifully, and add a single detailed, comprehensive news item under `"custom_news"`. Ensure the news item has a unique `"id"`.
+4. **Commit Changes**: Make sure to commit all source code edits, version bumps, changelog updates, and database updates together in git.
