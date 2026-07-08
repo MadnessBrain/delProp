@@ -401,6 +401,68 @@
 				if (sunPercent) {
 					sunPercent.textContent = `${percent}%`;
 				}
+			} else if (theme === 'rocket') {
+				const rocketEl = root.querySelector('.rocket-element');
+				const fireEl = root.querySelector('.rocket-fire');
+				const spaceBg = root.querySelector('.space-bg');
+				if (rocketEl) {
+					const b = 10 + (percent / 100) * 180;
+					rocketEl.style.bottom = `${b}px`;
+					if (fireEl) {
+						fireEl.style.bottom = `${b - 20}px`;
+						fireEl.style.display = percent > 5 ? 'block' : 'none';
+					}
+				}
+				if (spaceBg) {
+					spaceBg.style.opacity = (percent / 100).toFixed(2);
+				}
+				const rocketPercent = root.querySelector('#rocket-percent');
+				if (rocketPercent) {
+					rocketPercent.textContent = `${percent}%`;
+				}
+			} else if (theme === 'plant') {
+				const stem = root.querySelector('.plant-stem');
+				const shoot = root.querySelector('.plant-shoot');
+				const flower = root.querySelector('.plant-flower');
+				const leafL = root.querySelector('.leaf-left');
+				const leafR = root.querySelector('.leaf-right');
+				if (stem) {
+					const h = (percent / 100) * 120;
+					stem.style.height = `${h}px`;
+				}
+				if (shoot) {
+					shoot.style.display = percent < 80 ? 'block' : 'none';
+				}
+				if (flower) {
+					flower.style.display = percent >= 80 ? 'block' : 'none';
+					flower.style.transform = `translateX(-50%) scale(${Math.max(0, (percent - 80) / 20)})`;
+				}
+				if (leafL) {
+					leafL.style.display = percent > 30 ? 'block' : 'none';
+				}
+				if (leafR) {
+					leafR.style.display = percent > 60 ? 'block' : 'none';
+				}
+				const plantPercent = root.querySelector('#plant-percent');
+				if (plantPercent) {
+					plantPercent.textContent = `${percent}%`;
+				}
+			} else if (theme === 'battery') {
+				const fill = root.querySelector('.battery-fill');
+				if (fill) {
+					fill.style.height = `${percent}%`;
+					if (percent < 20) {
+						fill.style.background = 'linear-gradient(0deg, #b91c1c, #ef4444)';
+					} else if (percent < 60) {
+						fill.style.background = 'linear-gradient(0deg, #a16207, #eab308)';
+					} else {
+						fill.style.background = 'linear-gradient(0deg, #15803d, #22c55e)';
+					}
+				}
+				const batteryPercent = root.querySelector('#battery-percent');
+				if (batteryPercent) {
+					batteryPercent.textContent = `${percent}%`;
+				}
 			}
 
 			changeWrapperTimer = setTimeout(changeWrapper, delay);
@@ -459,6 +521,32 @@
 						<div class="sun-element">☀️</div>
 						<div class="earth-element"></div>
 						<span id="sun-percent" class="sun-percent">0%</span>
+					</div>
+					<div class="rocket-container">
+						<div class="space-bg">
+							<div class="stars"></div>
+						</div>
+						<div class="rocket-element">🚀</div>
+						<div class="rocket-fire">🔥</div>
+						<span id="rocket-percent" class="rocket-percent">0%</span>
+					</div>
+					<div class="plant-container">
+						<div class="soil-element"></div>
+						<div class="plant-stem">
+							<div class="plant-leaf leaf-left">🍃</div>
+							<div class="plant-leaf leaf-right">🍃</div>
+							<div class="plant-flower">🌹</div>
+							<div class="plant-shoot">🌱</div>
+						</div>
+						<span id="plant-percent" class="plant-percent">0%</span>
+					</div>
+					<div class="battery-container">
+						<div class="battery-head"></div>
+						<div class="battery-body">
+							<div class="battery-fill"></div>
+							<div class="battery-flash">⚡</div>
+							<span id="battery-percent" class="battery-percent">0%</span>
+						</div>
 					</div>
 				</div>
 				<div class="notifications">

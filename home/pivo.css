@@ -251,7 +251,7 @@ div .dot {
 /* ==============================
    ДОПОЛНИТЕЛЬНЫЕ ЭЛЕМЕНТЫ (ПО УМОЛЧАНИЮ СКРЫТЫ)
    ============================== */
-.bottle-neck, .stopwatch-top, .sun-arc-container {
+.bottle-neck, .stopwatch-top, .sun-arc-container, .rocket-container, .plant-container, .battery-container {
     display: none;
 }
 
@@ -457,4 +457,221 @@ div .dot {
     font-weight: 800;
     color: #fff;
     text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+
+/* ==============================
+   HIDES FOR ROCKET, PLANT, BATTERY
+   ============================== */
+.theme-rocket .glass_container,
+.theme-plant .glass_container,
+.theme-battery .glass_container,
+.theme-rocket .handle,
+.theme-plant .handle,
+.theme-battery .handle,
+.theme-rocket .glass_grooves,
+.theme-plant .glass_grooves,
+.theme-battery .glass_grooves,
+.theme-rocket .foam,
+.theme-plant .foam,
+.theme-battery .foam {
+    display: none;
+}
+
+/* ==============================
+   ТЕМА: РАКЕТА (🚀)
+   ============================== */
+.theme-rocket .rocket-container {
+    display: block;
+    position: absolute;
+    width: 140px;
+    height: 250px;
+    top: 0;
+    left: 0;
+    background: linear-gradient(180deg, #85c1e9 0%, #3498db 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 3.5px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+.theme-rocket .space-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: linear-gradient(180deg, #1b4f72 0%, #0b1a30 100%);
+    opacity: 0;
+    transition: opacity 1.5s ease;
+}
+.theme-rocket .rocket-element {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
+    transition: bottom 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 5;
+}
+.theme-rocket .rocket-fire {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px;
+    transition: bottom 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 4;
+}
+.theme-rocket .rocket-percent {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    z-index: 6;
+}
+
+/* ==============================
+   ТЕМА: РАСТЕНИЕ (🌱)
+   ============================== */
+.theme-plant .plant-container {
+    display: block;
+    position: absolute;
+    width: 140px;
+    height: 250px;
+    top: 0;
+    left: 0;
+    background: linear-gradient(180deg, #e8f8f5 0%, #a2d9ce 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 3.5px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+.theme-plant .soil-element {
+    position: absolute;
+    width: 100%;
+    height: 40px;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(180deg, #5d4037 0%, #3e2723 100%);
+    z-index: 3;
+}
+.theme-plant .plant-stem {
+    position: absolute;
+    width: 6px;
+    height: 0;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #4caf50;
+    transition: height 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 4;
+}
+.theme-plant .plant-leaf {
+    position: absolute;
+    font-size: 18px;
+    z-index: 5;
+}
+.theme-plant .leaf-left {
+    left: -18px;
+    top: 20px;
+    transform: scaleX(-1);
+}
+.theme-plant .leaf-right {
+    right: -18px;
+    top: 40px;
+}
+.theme-plant .plant-shoot {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    z-index: 5;
+}
+.theme-plant .plant-flower {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    z-index: 6;
+    transition: transform 0.5s ease-in-out;
+}
+.theme-plant .plant-percent {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    font-weight: 800;
+    color: #2e7d32;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+    z-index: 6;
+}
+
+/* ==============================
+   ТЕМА: БАТАРЕЯ (🔋)
+   ============================== */
+.theme-battery .battery-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    width: 140px;
+    height: 250px;
+    top: 0;
+    left: 0;
+}
+.theme-battery .battery-head {
+    width: 40px;
+    height: 12px;
+    background: rgba(180, 180, 180, 0.8);
+    border: 3px solid rgba(150, 150, 150, 0.8);
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+}
+.theme-battery .battery-body {
+    position: relative;
+    width: 120px;
+    height: 220px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 4px solid rgba(180, 180, 180, 0.8);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 
+        inset 4px 0 8px rgba(255,255,255,0.1),
+        0 8px 32px rgba(0,0,0,0.15);
+}
+.theme-battery .battery-fill {
+    position: absolute;
+    width: 100%;
+    height: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(0deg, #15803d, #22c55e);
+    transition: height 1.5s cubic-bezier(0.25, 1, 0.5, 1), background 0.5s ease;
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+}
+.theme-battery .battery-flash {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 42px;
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+    z-index: 5;
+    pointer-events: none;
+}
+.theme-battery .battery-percent {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    z-index: 6;
 }
