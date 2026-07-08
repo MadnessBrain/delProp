@@ -127,18 +127,16 @@
 				});
 
 				if (customNewsList.length > 0) {
-					customNewsList.forEach(item => {
-						if (selectedNews.includes(item.id)) {
-							const existing = container.querySelector(`[dhx_f_id="${item.id}"]`);
-							if (existing) existing.remove();
-							return;
-						}
-
-						let customNode = container.querySelector(`[dhx_f_id="${item.id}"]`);
+					const latestNews = customNewsList[customNewsList.length - 1];
+					if (selectedNews.includes(latestNews.id)) {
+						const existing = container.querySelector(`[dhx_f_id="${latestNews.id}"]`);
+						if (existing) existing.remove();
+					} else {
+						let customNode = container.querySelector(`[dhx_f_id="${latestNews.id}"]`);
 						if (!customNode) {
 							customNode = document.createElement('div');
 							customNode.className = 'dhx_list_item dhx_list_news_item delprop-custom-news';
-							customNode.setAttribute('dhx_f_id', item.id);
+							customNode.setAttribute('dhx_f_id', latestNews.id);
 							customNode.style.borderLeft = '4px solid #3b82f6';
 							customNode.style.padding = '8px';
 							customNode.style.backgroundColor = '#f0f7ff';
@@ -148,14 +146,21 @@
 							customNode.style.position = 'relative';
 							
 							customNode.innerHTML = `
-								<div style="font-weight: bold; color: #1e3a8a; margin-bottom: 4px; font-family: inherit; padding-right: 20px;">📣 ${item.title}</div>
-								<div style="font-size: 11px; line-height: 1.4; color: #374151; font-family: inherit;">${item.text}</div>
+								<div style="font-weight: bold; color: #1e3a8a; margin-bottom: 4px; font-family: inherit; padding-right: 20px;">📣 ${latestNews.title}</div>
+								<div style="font-size: 11px; line-height: 1.4; color: #374151; font-family: inherit;">${latestNews.text}</div>
 							`;
 							
 							container.prepend(customNode);
 						}
 						
-						addCloseButton(customNode, item.id);
+						addCloseButton(customNode, latestNews.id);
+					}
+
+					// Remove any older custom news elements that might be lingering
+					container.querySelectorAll('.delprop-custom-news').forEach(node => {
+						if (node.getAttribute('dhx_f_id') !== latestNews.id) {
+							node.remove();
+						}
 					});
 				}
 
