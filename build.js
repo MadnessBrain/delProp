@@ -52,26 +52,21 @@ function obfuscateJS(code) {
 }
 
 // Helper to compile/minify and obfuscate a JS file
-function processJS(srcPath, destPath, addIntegrityCheck = false) {
+function processJS(srcPath, destPath, relativeDest, addIntegrityCheck = false) {
 	console.log(`Processing JS: ${srcPath}`);
 	const tempDest = destPath + '.tmp.js';
 	
 	// Ensure destination directory exists
 	fs.mkdirSync(path.dirname(destPath), { recursive: true });
 	
-	// Minify first using esbuild
-	execSync(`npx -y esbuild "${srcPath}" --bundle --minify --outfile="${tempDest}"`, { stdio: 'inherit' });
+	// Minify first using esbuild (no bundling since these are separate modules now)
+	execSync(`npx -y esbuild "${srcPath}" --minify --outfile="${tempDest}"`, { stdio: 'inherit' });
 	
 	// Read minified code and apply custom string obfuscation
 	const minifiedCode = fs.readFileSync(tempDest, 'utf8');
 	let finalCode = obfuscateJS(minifiedCode);
 	
 	if (addIntegrityCheck) {
-		const wrappedCode = `window.delPropInit = function(key) {
-			if (key !== 'INTEGRITY_SIGNATURE:00000000000000000000000000000000'.substring(20)) return;
-			${finalCode}
-		};`;
-		
 		const checkCode = `
 		;(async () => {
 			const crash = () => {
@@ -80,7 +75,7 @@ function processJS(srcPath, destPath, addIntegrityCheck = false) {
 				throw new Error('Security Error');
 			};
 			try {
-				const res = await fetch(chrome.runtime.getURL('archive/saveAddres.js'));
+				const res = await fetch(chrome.runtime.getURL('${relativeDest.replace(/\\/g, "/")}'));
 				const txt = await res.text();
 				const marker = 'INTEGRITY_SIGNATURE:';
 				const idx = txt.lastIndexOf(marker);
@@ -96,7 +91,12 @@ function processJS(srcPath, destPath, addIntegrityCheck = false) {
 				}
 				const calculated = (h >>> 0).toString(16).padStart(32, '0').substring(0, 32);
 				if (calculated !== embedded) { crash(); return; }
-				window.delPropInit(calculated);
+				
+				// Execute the protected code
+				const run = () => {
+					${finalCode}
+				};
+				run();
 			} catch (e) {
 				crash();
 			}
@@ -104,8 +104,7 @@ function processJS(srcPath, destPath, addIntegrityCheck = false) {
 		// INTEGRITY_SIGNATURE:00000000000000000000000000000000
 		`;
 		
-		let combined = wrappedCode + "\n" + checkCode;
-		
+		let combined = checkCode;
 		const marker = 'INTEGRITY_SIGNATURE:';
 		const lastIdx = combined.lastIndexOf(marker);
 		
@@ -159,18 +158,6 @@ function copyRecursiveFull(src, dest) {
 			const minifyFull = process.argv.includes('--minify-full');
 			if (basename.includes('xlsx.full.min')) {
 				copyFile(src, dest);
-			} else if (src.includes('archive' + path.sep)) {
-				if (basename === 'saveAddres.js') {
-					if (minifyFull) {
-						console.log(`Bundling and minifying Archive script for Full version: ${src}`);
-						fs.mkdirSync(path.dirname(dest), { recursive: true });
-						execSync(`npx -y esbuild "${src}" --bundle --minify --outfile="${dest}"`, { stdio: 'inherit' });
-					} else {
-						console.log(`Bundling Archive script for Full version: ${src}`);
-						fs.mkdirSync(path.dirname(dest), { recursive: true });
-						execSync(`npx -y esbuild "${src}" --bundle --outfile="${dest}"`, { stdio: 'inherit' });
-					}
-				}
 			} else {
 				if (minifyFull) {
 					console.log(`Minifying JS for Full version: ${src}`);
@@ -195,11 +182,14 @@ const archiveDest = path.join(distDir, 'archive');
 
 // 1. Process specific source files for Archive version
 const jsFiles = [
+	['archive/tabSync.js', 'archive/tabSync.js', true],
+	['archive/projectFilter.js', 'archive/projectFilter.js', true],
 	['archive/saveAddres.js', 'archive/saveAddres.js', true],
+	['archive/patch.js', 'archive/patch.js', false],
 	['background.js', 'background.js', false]
 ];
 jsFiles.forEach(([src, relativeDest, check]) => {
-	processJS(path.join(__dirname, src), path.join(archiveDest, relativeDest), check);
+	processJS(path.join(__dirname, src), path.join(archiveDest, relativeDest), relativeDest, check);
 });
 
 const cssFiles = [

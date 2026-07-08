@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>delProp — Улучшайзер</title>
   <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
 
   <div class="app-header">
@@ -23,9 +25,12 @@
   </div>
 
   <div class="tab-navigation" role="tablist">
-    <button type="button" class="tab-btn active" id="tab-btn-general" role="tab" aria-selected="true" aria-controls="tab-content-general">⚙️ Основные</button>
-    <button type="button" class="tab-btn" id="tab-btn-archive" role="tab" aria-selected="false" aria-controls="tab-content-archive">🗄️ Архив</button>
-    <button type="button" class="tab-btn" id="tab-btn-comp" role="tab" aria-selected="false" aria-controls="tab-content-comp">📅 Отгулы</button>
+    <button type="button" class="tab-btn active" id="tab-btn-general" role="tab" aria-selected="true"
+      aria-controls="tab-content-general">⚙️ Основные</button>
+    <button type="button" class="tab-btn" id="tab-btn-archive" role="tab" aria-selected="false"
+      aria-controls="tab-content-archive">🗄️ Архив</button>
+    <button type="button" class="tab-btn" id="tab-btn-comp" role="tab" aria-selected="false"
+      aria-controls="tab-content-comp">📅 Отгулы</button>
   </div>
 
   <form name="my">
@@ -59,7 +64,8 @@
             </select>
           </div>
         </label>
-        <button type="button" id="restoreNewsBtn" class="btn-secondary" style="width: 100%; justify-content: center; margin-top: 8px;">
+        <button type="button" id="restoreNewsBtn" class="btn-secondary"
+          style="width: 100%; justify-content: center; margin-top: 8px;">
           🔄 Восстановить скрытые новости
         </button>
       </fieldset>
@@ -178,7 +184,8 @@
             </select>
           </div>
         </label>
-        <div class="header-icon-selection collapse-section" id="header-icon-selection-section" style="margin-top: 8px; margin-bottom: 8px;">
+        <div class="header-icon-selection collapse-section" id="header-icon-selection-section"
+          style="margin-top: 8px; margin-bottom: 8px;">
           <label class="field-label" style="margin-bottom: 6px;">Значок в шапке</label>
           <div class="emoji-grid" id="emoji-grid">
             <!-- Will be dynamically populated in popup.js -->
@@ -270,17 +277,29 @@
           </div>
           <div class="divider"></div>
           <div class="section-title">Управление данными</div>
-          <button type="button" id="clearHashes" class="btn-secondary" style="width: 100%; justify-content: center; margin-top: 4px;">
+          <button type="button" id="clearHashes" class="btn-secondary"
+            style="width: 100%; justify-content: center; margin-top: 4px;">
             🗑 Очистить историю вкладок
           </button>
           <div class="divider"></div>
           <div class="section-title">Горячие клавиши (в архиве)</div>
-          <div class="hotkeys-panel" style="display: flex; flex-direction: column; gap: 6px; padding: 8px 12px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-top: 4px;">
-            <div style="display: flex; justify-content: space-between; font-size: 11px;"><span style="color: var(--text-muted); font-weight: bold;">Alt + C</span> <span style="color: var(--text-label);">Ссылка для чата (Markdown)</span></div>
-            <div style="display: flex; justify-content: space-between; font-size: 11px;"><span style="color: var(--text-muted); font-weight: bold;">Alt + E</span> <span style="color: var(--text-label);">Ссылка для почты (Plain)</span></div>
-            <div style="display: flex; justify-content: space-between; font-size: 11px;"><span style="color: var(--text-muted); font-weight: bold;">Alt + L</span> <span style="color: var(--text-label);">Прямая ссылка</span></div>
-            <div style="display: flex; justify-content: space-between; font-size: 11px;"><span style="color: var(--text-muted); font-weight: bold;">Alt + M</span> <span style="color: var(--text-label);">Копировать MD5 хэш</span></div>
-            <div style="display: flex; justify-content: space-between; font-size: 11px;"><span style="color: var(--text-muted); font-weight: bold;">Alt + Z</span> <span style="color: var(--text-label);">Скачать ZIP-архив</span></div>
+          <div class="hotkeys-panel"
+            style="display: flex; flex-direction: column; gap: 6px; padding: 8px 12px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-top: 4px;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px;"><span
+                style="color: var(--text-muted); font-weight: bold;">Alt + C</span> <span
+                style="color: var(--text-label);">Ссылка для чата (Markdown)</span></div>
+            <div style="display: flex; justify-content: space-between; font-size: 11px;"><span
+                style="color: var(--text-muted); font-weight: bold;">Alt + E</span> <span
+                style="color: var(--text-label);">Ссылка для почты (Plain)</span></div>
+            <div style="display: flex; justify-content: space-between; font-size: 11px;"><span
+                style="color: var(--text-muted); font-weight: bold;">Alt + L</span> <span
+                style="color: var(--text-label);">Прямая ссылка</span></div>
+            <div style="display: flex; justify-content: space-between; font-size: 11px;"><span
+                style="color: var(--text-muted); font-weight: bold;">Alt + M</span> <span
+                style="color: var(--text-label);">Копировать MD5 хэш</span></div>
+            <div style="display: flex; justify-content: space-between; font-size: 11px;"><span
+                style="color: var(--text-muted); font-weight: bold;">Alt + Z</span> <span
+                style="color: var(--text-label);">Скачать ZIP-архив</span></div>
           </div>
         </div>
       </fieldset>
@@ -291,7 +310,7 @@
         <legend class="card-legend">
           <span class="legend-icon">📅</span> Учет отгулов
         </legend>
-        
+
         <div class="comp-summary">
           <div class="comp-summary-card">
             <span class="comp-summary-title">Начальный баланс</span>
@@ -314,12 +333,7 @@
               <option value="all">Все месяцы</option>
             </select>
           </div>
-          <button type="button" id="exportExcelBtn" class="btn-secondary" style="margin-left: 8px;">
-            📊 Экспорт в Excel
-          </button>
-          <button type="button" id="clearCompDb" class="btn-danger-small" style="margin-left: auto;">
-            🗑 Сбросить отгулы
-          </button>
+
         </div>
 
         <div class="comp-table-container">
@@ -336,6 +350,14 @@
               <!-- Rows will be dynamically generated -->
             </tbody>
           </table>
+        </div>
+        <div class="comp-export-container">
+          <button type="button" id="exportExcelBtn" class="btn-secondary">
+            📊 Экспорт в Excel
+          </button>
+          <button type="button" id="clearCompDb" class="btn-danger-small">
+            🗑 Сбросить отгулы
+          </button>
         </div>
       </fieldset>
     </div>
@@ -356,4 +378,5 @@
   <script src="xlsx.full.min.js"></script>
   <script src="popup.js"></script>
 </body>
+
 </html>

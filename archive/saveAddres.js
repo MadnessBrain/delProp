@@ -1,10 +1,8 @@
 // archive/saveAddres.js
-import { state, updateHashFromDocName, handleTabClick } from './tabSync.js';
-import { initProjectFilter, renderPins, applyFilter } from './projectFilter.js';
 
 // Load settings and cached hashes from storage
 chrome.storage.local.get(['formFields', 'archiveHashes', 'pinnedProjects', 'archiveShowPinnedOnly', 'lastOpenedDoc'], (data) => {
-	state.archiveSettings = state.isArchiveOnly ? {
+	window.archiveState.archiveSettings = window.archiveState.isArchiveOnly ? {
 		enabled: 'true',
 		saveTabs: 'true',
 		syncDocName: 'true',
@@ -15,17 +13,17 @@ chrome.storage.local.get(['formFields', 'archiveHashes', 'pinnedProjects', 'arch
 		syncDocName: 'true',
 		projectFilter: 'true'
 	});
-	state.archiveHashes = data.archiveHashes || {};
-	state.pinnedProjects = new Set(data.pinnedProjects || []);
-	state.archiveShowPinnedOnly = data.archiveShowPinnedOnly === true || data.archiveShowPinnedOnly === 'true';
+	window.archiveState.archiveHashes = data.archiveHashes || {};
+	window.archiveState.pinnedProjects = new Set(data.pinnedProjects || []);
+	window.archiveState.archiveShowPinnedOnly = data.archiveShowPinnedOnly === true || data.archiveShowPinnedOnly === 'true';
 
-	if (state.archiveSettings.enabled !== 'true') {
+	if (window.archiveState.archiveSettings.enabled !== 'true') {
 		console.log("delProp: Archive enhancements are disabled.");
 		return;
 	}
 
 	const lastOpenedDoc = data.lastOpenedDoc;
-	if (state.archiveSettings.saveTabs === 'true' && !window.location.hash && lastOpenedDoc) {
+	if (window.archiveState.archiveSettings.saveTabs === 'true' && !window.location.hash && lastOpenedDoc) {
 		window.location.hash = `#${lastOpenedDoc}`;
 	}
 
@@ -34,12 +32,12 @@ chrome.storage.local.get(['formFields', 'archiveHashes', 'pinnedProjects', 'arch
 	if (existingLabel) {
 		docObserver.disconnect();
 		docObserver.observe(existingLabel, { childList: true, subtree: true, characterData: true });
-		updateHashFromDocName(existingLabel);
+		window.updateHashFromDocName(existingLabel);
 	}
 
 	const existingTree = document.querySelector('.dhxtree_dhx_skyblue');
-	if (existingTree && state.archiveSettings.projectFilter === 'true') {
-		initProjectFilter(existingTree);
+	if (existingTree && window.archiveState.archiveSettings.projectFilter === 'true') {
+		window.initProjectFilter(existingTree);
 	}
 
 	// Initialize main observer
@@ -52,7 +50,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 	if (area !== 'local') return;
 
 	if (changes.formFields) {
-		state.archiveSettings = state.isArchiveOnly ? {
+		window.archiveState.archiveSettings = window.archiveState.isArchiveOnly ? {
 			enabled: 'true',
 			saveTabs: 'true',
 			syncDocName: 'true',
@@ -63,7 +61,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 			syncDocName: 'true',
 			projectFilter: 'true'
 		});
-		if (state.archiveSettings.enabled === 'true') {
+		if (window.archiveState.archiveSettings.enabled === 'true') {
 			mainObserver.observe(document.body, { childList: true, subtree: true });
 		} else {
 			mainObserver.disconnect();
@@ -72,26 +70,26 @@ chrome.storage.onChanged.addListener((changes, area) => {
 	}
 
 	if (changes.archiveHashes) {
-		state.archiveHashes = changes.archiveHashes.newValue || {};
+		window.archiveState.archiveHashes = changes.archiveHashes.newValue || {};
 	}
 
 	if (changes.pinnedProjects) {
-		state.pinnedProjects = new Set(changes.pinnedProjects.newValue || []);
+		window.archiveState.pinnedProjects = new Set(changes.pinnedProjects.newValue || []);
 		// Trigger filter update on all active tree containers
 		document.querySelectorAll('.dhxtree_dhx_skyblue').forEach(container => {
-			renderPins(container);
-			applyFilter(container);
+			window.renderPins(container);
+			window.applyFilter(container);
 		});
 	}
 
 	if (changes.archiveShowPinnedOnly) {
-		state.archiveShowPinnedOnly = changes.archiveShowPinnedOnly.newValue === 'true' || changes.archiveShowPinnedOnly.newValue === true;
+		window.archiveState.archiveShowPinnedOnly = changes.archiveShowPinnedOnly.newValue === 'true' || changes.archiveShowPinnedOnly.newValue === true;
 		document.querySelectorAll('.dhxtree_dhx_skyblue').forEach(container => {
 			const pinToggle = container.querySelector('.delprop-pin-toggle');
 			if (pinToggle) {
-				pinToggle.classList.toggle('active', state.archiveShowPinnedOnly);
+				pinToggle.classList.toggle('active', window.archiveState.archiveShowPinnedOnly);
 			}
-			applyFilter(container);
+			window.applyFilter(container);
 		});
 	}
 });
@@ -106,7 +104,7 @@ const docObserver = new MutationObserver(mutations => {
 				(target.closest('.dhxform_txt_label2.topmost') || target) : 
 				target.parentElement?.closest('.dhxform_txt_label2.topmost');
 			if (docNameNode) {
-				updateHashFromDocName(docNameNode);
+				window.updateHashFromDocName(docNameNode);
 				break;
 			}
 		}
@@ -129,48 +127,36 @@ const mainObserver = new MutationObserver(mutations => {
 			if (node.classList.contains('dhxform_txt_label2') && node.classList.contains('topmost')) {
 				docObserver.disconnect();
 				docObserver.observe(node, { childList: true, subtree: true, characterData: true });
-				updateHashFromDocName(node);
+				window.updateHashFromDocName(node);
 			}
 
 			// Initialize the project filter if a tree container is added
 			const treeContainer = node.classList.contains('dhxtree_dhx_skyblue') ? node : node.querySelector('.dhxtree_dhx_skyblue');
-			if (treeContainer && state.archiveSettings.projectFilter === 'true') {
-				initProjectFilter(treeContainer);
+			if (treeContainer && window.archiveState.archiveSettings.projectFilter === 'true') {
+				window.initProjectFilter(treeContainer);
 			}
 		}
 	}
 });
 
 // Document-level event delegation for clicks (tab switching)
-document.addEventListener('click', handleTabClick);
+document.addEventListener('click', window.handleTabClick);
 
-// Inject bridge script to page context to call native archive functions
-const bridgeScript = document.createElement("script");
-bridgeScript.textContent = `
-	document.addEventListener("delPropTrigger", (e) => {
-		const { action } = e.detail;
-		if (typeof MainTabBar === 'undefined' || typeof GetTabIndexByTabID === 'undefined') return;
-		const actvId = MainTabBar.getActiveTab();
-		if (!actvId) return;
-		const main_tab_id = GetTabIndexByTabID(actvId);
-		
-		if (action === "copyLinkChat" && typeof CopyLinkToBufferChat === 'function') {
-			CopyLinkToBufferChat(parseInt(main_tab_id));
-		} else if (action === "copyLinkEmail" && typeof CopyLinkToBufferEmail === 'function') {
-			CopyLinkToBufferEmail(parseInt(main_tab_id));
-		} else if (action === "copyLinkDirect" && typeof CopyLinkToBuffer === 'function') {
-			CopyLinkToBuffer(parseInt(main_tab_id));
-		} else if (action === "copyMD5" && typeof CopyMD5toBuffer === 'function') {
-			CopyMD5toBuffer();
-		} else if (action === "downloadZip" && typeof DownloadZip === 'function' && typeof GetCurrentDocID === 'function' && typeof GetCurrentDocName === 'function') {
-			const doc_id = GetCurrentDocID();
-			const doc_name = GetCurrentDocName();
-			DownloadZip(doc_name, doc_id);
-		}
-	});
-`;
-document.documentElement.appendChild(bridgeScript);
-bridgeScript.remove();
+// Listen for document info response from the page context (via archive/patch.js)
+document.addEventListener("delPropResponse", (e) => {
+	const { action, doc_id, doc_name, tabName } = e.detail;
+	if (action === "activeDoc") {
+		window.updateHashAndSave(doc_id, doc_name, tabName);
+	}
+});
+
+// Inject patch.js to page context to call native archive functions and retrieve doc details
+const patchScript = document.createElement('script');
+patchScript.src = chrome.runtime.getURL('archive/patch.js');
+patchScript.onload = function() {
+	this.remove();
+};
+(document.head || document.documentElement).appendChild(patchScript);
 
 // Key listener for shortcuts
 document.addEventListener('keydown', (e) => {

@@ -1,12 +1,10 @@
-import { state } from './tabSync.js';
-
-export function getProjectSpan(row) {
+window.getProjectSpan = function(row) {
 	const directTable = row.querySelector(':scope > td > table');
 	if (!directTable) return null;
 	return directTable.querySelector(':scope > tr > td > span.standartTreeRow, :scope > tr > td > span.selectedTreeRow, :scope > tbody > tr > td > span.standartTreeRow, :scope > tbody > tr > td > span.selectedTreeRow');
-}
+};
 
-export function applyFilter(treeContainer) {
+window.applyFilter = function(treeContainer) {
 	const searchInput = treeContainer.querySelector('.delprop-search-input');
 	const pinToggle = treeContainer.querySelector('.delprop-pin-toggle');
 	if (!searchInput || !pinToggle) return;
@@ -25,7 +23,7 @@ export function applyFilter(treeContainer) {
 	const rowsCount = rows.length;
 	for (let i = 0; i < rowsCount; i++) {
 		const row = rows[i];
-		const span = getProjectSpan(row);
+		const span = window.getProjectSpan(row);
 		let isProject = false;
 		let projectCode = '';
 		let projectTitle = '';
@@ -40,7 +38,7 @@ export function applyFilter(treeContainer) {
 
 		if (isProject) {
 			const isMatchQuery = !query || projectCode.includes(query) || projectTitle.includes(query);
-			const isMatchPinned = !showPinnedOnly || state.pinnedProjects.has(span.textContent.trim());
+			const isMatchPinned = !showPinnedOnly || window.archiveState.pinnedProjects.has(span.textContent.trim());
 			const isMatch = isMatchQuery && isMatchPinned;
 			
 			currentProjectVisible = isMatch;
@@ -49,9 +47,9 @@ export function applyFilter(treeContainer) {
 			row.style.display = currentProjectVisible ? '' : 'none';
 		}
 	}
-}
+};
 
-export function renderPins(treeContainer) {
+window.renderPins = function(treeContainer) {
 	const mainTableStyle = treeContainer.querySelector('.containerTableStyle');
 	if (!mainTableStyle) return;
 
@@ -64,7 +62,7 @@ export function renderPins(treeContainer) {
 	const rowsCount = rows.length;
 	for (let i = 0; i < rowsCount; i++) {
 		const row = rows[i];
-		const span = getProjectSpan(row);
+		const span = window.getProjectSpan(row);
 		if (!span) continue;
 
 		const projectCode = span.textContent.trim();
@@ -87,22 +85,22 @@ export function renderPins(treeContainer) {
 			pin.addEventListener('click', (e) => {
 				e.stopPropagation(); // Avoid triggering DHTMLX node selection
 				
-				if (state.pinnedProjects.has(projectCode)) {
-					state.pinnedProjects.delete(projectCode);
+				if (window.archiveState.pinnedProjects.has(projectCode)) {
+					window.archiveState.pinnedProjects.delete(projectCode);
 					pin.style.opacity = '0.3';
 					row.classList.remove('delprop-row-pinned');
 				} else {
-					state.pinnedProjects.add(projectCode);
+					window.archiveState.pinnedProjects.add(projectCode);
 					pin.style.opacity = '1';
 					row.classList.add('delprop-row-pinned');
 				}
 				
-				chrome.storage.local.set({ pinnedProjects: Array.from(state.pinnedProjects) });
-				applyFilter(treeContainer);
+				chrome.storage.local.set({ pinnedProjects: Array.from(window.archiveState.pinnedProjects) });
+				window.applyFilter(treeContainer);
 			});
 		}
 
-		if (state.pinnedProjects.has(projectCode)) {
+		if (window.archiveState.pinnedProjects.has(projectCode)) {
 			pin.style.opacity = '1';
 			row.classList.add('delprop-row-pinned');
 		} else {
@@ -110,9 +108,9 @@ export function renderPins(treeContainer) {
 			row.classList.remove('delprop-row-pinned');
 		}
 	}
-}
+};
 
-export function initProjectFilter(treeContainer) {
+window.initProjectFilter = function(treeContainer) {
 	if (!treeContainer || treeContainer.querySelector('.delprop-search-container')) return;
 
 	const searchContainer = document.createElement('div');
@@ -128,7 +126,7 @@ export function initProjectFilter(treeContainer) {
 	pinToggle.textContent = '📌';
 	pinToggle.title = 'Показать только закрепленные';
 
-	if (state.archiveShowPinnedOnly) {
+	if (window.archiveState.archiveShowPinnedOnly) {
 		pinToggle.classList.add('active');
 	}
 
@@ -139,15 +137,15 @@ export function initProjectFilter(treeContainer) {
 	const mainTableStyle = treeContainer.querySelector('.containerTableStyle');
 
 	searchInput.addEventListener('input', () => {
-		applyFilter(treeContainer);
+		window.applyFilter(treeContainer);
 	});
 
 	pinToggle.addEventListener('click', () => {
 		pinToggle.classList.toggle('active');
 		const isActive = pinToggle.classList.contains('active');
-		state.archiveShowPinnedOnly = isActive;
+		window.archiveState.archiveShowPinnedOnly = isActive;
 		chrome.storage.local.set({ archiveShowPinnedOnly: isActive });
-		applyFilter(treeContainer);
+		window.applyFilter(treeContainer);
 	});
 
 	if (mainTableStyle) {
@@ -157,8 +155,8 @@ export function initProjectFilter(treeContainer) {
 				treeContainer._pinObserver.disconnect();
 			}
 			
-			renderPins(treeContainer);
-			applyFilter(treeContainer);
+			window.renderPins(treeContainer);
+			window.applyFilter(treeContainer);
 			
 			if (treeContainer._pinObserver) {
 				treeContainer._pinObserver.observe(mainTableStyle, {
@@ -177,7 +175,7 @@ export function initProjectFilter(treeContainer) {
 		});
 		
 		// Initial rendering of pins
-		renderPins(treeContainer);
-		applyFilter(treeContainer);
+		window.renderPins(treeContainer);
+		window.applyFilter(treeContainer);
 	}
-}
+};
