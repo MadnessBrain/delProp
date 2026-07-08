@@ -1,7 +1,105 @@
 // archive/saveAddres.js
 
+let workTimerField = null;
+let userInput = null;
+
+function parseTimeToMinutes(timeStr) {
+	if (!timeStr) return null;
+	const parts = timeStr.split(':');
+	if (parts.length < 2) return null;
+	return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+}
+
+function timeNorm(timeStr) {
+	const [h, m] = timeStr.split(':').map(Number);
+	return h * 3600000 + m * 60000;
+}
+
+function getPerDay(startWorkMs, endWorkMs) {
+	const now = new Date();
+	const nowMs = now.getHours() * 3600000 + now.getMinutes() * 60000 + now.getSeconds() * 1000 + now.getMilliseconds();
+	if (nowMs < startWorkMs) {
+		return { percent: 0, delay: startWorkMs - nowMs };
+	}
+	if (nowMs > endWorkMs) {
+		return { percent: 100, delay: 0 };
+	}
+	const total = endWorkMs - startWorkMs;
+	const current = nowMs - startWorkMs;
+	const percent = Math.floor((current / total) * 100);
+	return { percent, delay: 60000 };
+}
+
+window.initArchiveTimer = function() {
+	if (!workTimerField || document.getElementById('delprop-archive-timer')) return;
+
+	const actvTab = document.querySelector('.dhxtabbar_tab');
+	if (!actvTab) return;
+
+	const parent = actvTab.parentNode;
+	if (!parent) return;
+
+	parent.style.position = 'relative';
+
+	const timerDiv = document.createElement('div');
+	timerDiv.id = 'delprop-archive-timer';
+	timerDiv.style.position = 'absolute';
+	timerDiv.style.right = '15px';
+	timerDiv.style.top = '50%';
+	timerDiv.style.transform = 'translateY(-50%)';
+	timerDiv.style.fontSize = '11px';
+	timerDiv.style.fontFamily = 'Tahoma, Arial, sans-serif';
+	timerDiv.style.color = '#333';
+	timerDiv.style.zIndex = '999';
+	timerDiv.style.pointerEvents = 'none';
+
+	parent.appendChild(timerDiv);
+
+	const start = workTimerField.startDay || '07:00';
+	let latenessMin = 0;
+	if (userInput) {
+		const startMin = parseTimeToMinutes(start);
+		const loginMin = parseTimeToMinutes(userInput);
+		if (startMin !== null && loginMin !== null && loginMin > startMin) {
+			latenessMin = loginMin - startMin;
+		}
+	}
+
+	const endDay = (new Date().getDay() !== 5 ? (workTimerField.endDay || '16:00') : (workTimerField.endDayF || '14:45'));
+	
+	let exitTime = endDay;
+	if (latenessMin > 0 && latenessMin <= 30) {
+		const endMin = parseTimeToMinutes(endDay);
+		if (endMin !== null) {
+			const finalMin = endMin + latenessMin;
+			const fh = String(Math.floor(finalMin / 60)).padStart(2, '0');
+			const fm = String(finalMin % 60).padStart(2, '0');
+			exitTime = `${fh}:${fm}`;
+		}
+	}
+
+	const startWork = timeNorm(start);
+	const endWork = timeNorm(endDay);
+
+	function update() {
+		if (new Date().getDay() === 6 || new Date().getDay() === 0) {
+			timerDiv.innerHTML = `На выход: <strong>${exitTime}</strong> (100%)`;
+			return;
+		}
+		const { percent, delay } = getPerDay(startWork, endWork + (latenessMin <= 30 ? latenessMin * 60 * 1000 : 0));
+		timerDiv.innerHTML = `На выход: <strong>${exitTime}</strong> (${percent}%)`;
+		if (percent < 100) {
+			setTimeout(update, delay);
+		}
+	}
+	update();
+};
+
 // Load settings and cached hashes from storage
-chrome.storage.local.get(['formFields', 'archiveHashes', 'pinnedProjects', 'archiveShowPinnedOnly', 'lastOpenedDoc'], (data) => {
+chrome.storage.local.get(['formFields', 'archiveHashes', 'pinnedProjects', 'archiveShowPinnedOnly', 'lastOpenedDoc', 'user_input'], (data) => {
+	workTimerField = data.formFields?.workTimerField;
+	userInput = data.user_input;
+
 	window.archiveState.archiveSettings = window.archiveState.isArchiveOnly ? {
 		enabled: 'true',
 		saveTabs: 'true',
@@ -39,6 +137,8 @@ chrome.storage.local.get(['formFields', 'archiveHashes', 'pinnedProjects', 'arch
 	if (existingTree && window.archiveState.archiveSettings.projectFilter === 'true') {
 		window.initProjectFilter(existingTree);
 	}
+
+	window.initArchiveTimer();
 
 	// Initialize main observer
 	mainObserver.observe(document.body, { childList: true, subtree: true });
@@ -112,6 +212,7 @@ const docObserver = new MutationObserver(mutations => {
 });
 
 const mainObserver = new MutationObserver(mutations => {
+	window.initArchiveTimer();
 	const mutationsCount = mutations.length;
 	for (let i = 0; i < mutationsCount; i++) {
 		const mutation = mutations[i];
