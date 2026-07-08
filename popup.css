@@ -279,9 +279,14 @@ select:focus {
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-option {
+optgroup, option {
   background: #1a1d27;
   color: var(--text);
+}
+
+optgroup {
+  color: var(--accent);
+  font-weight: bold;
 }
 
 /* Full-width select (when not in toggle-label) */
