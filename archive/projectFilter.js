@@ -137,7 +137,49 @@ window.initProjectFilter = function(treeContainer) {
 	const mainTableStyle = treeContainer.querySelector('.containerTableStyle');
 
 	searchInput.addEventListener('input', () => {
-		window.applyFilter(treeContainer);
+		const val = searchInput.value.trim();
+		// If query contains a dot or is numeric, delegate to smart hierarchical search
+		if (val.includes('.') || /^\d+$/.test(val)) {
+			document.dispatchEvent(new CustomEvent("delPropTrigger", { 
+				detail: { action: "smartSearch", query: val } 
+			}));
+		} else {
+			window.applyFilter(treeContainer);
+		}
+	});
+
+	searchInput.addEventListener('keydown', (e) => {
+		if (e.key === 'Enter') {
+			const val = searchInput.value.trim();
+			if (val) {
+				document.dispatchEvent(new CustomEvent("delPropTrigger", { 
+					detail: { action: "smartSearchEnter", query: val } 
+				}));
+			}
+		}
+	});
+
+	// Register listeners for input locking and clearing
+	document.addEventListener("delPropResponse", (e) => {
+		const { action, blocked } = e.detail;
+		if (action === "blockSearchInput") {
+			searchInput.disabled = blocked;
+			if (blocked) {
+				searchInput.style.opacity = '0.5';
+				searchInput.style.cursor = 'wait';
+				searchInput.placeholder = 'Загрузка...';
+			} else {
+				searchInput.style.opacity = '1';
+				searchInput.style.cursor = 'text';
+				searchInput.placeholder = 'Фильтр по проектам...';
+				searchInput.focus();
+			}
+		} else if (action === "clearSearchInput") {
+			searchInput.value = '';
+			document.dispatchEvent(new CustomEvent("delPropTrigger", { 
+				detail: { action: "smartSearch", query: "" } 
+			}));
+		}
 	});
 
 	pinToggle.addEventListener('click', () => {
