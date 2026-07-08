@@ -18,15 +18,19 @@
         <span class="logo-copyright">© <a href="https://r-and-l.ru" target="_blank" class="logo-link">R&L</a></span>
       </div>
     </div>
-    <div class="user-badge" id="userBadge">
-      <span class="user-dot"></span>
-      <span class="user-name">Загрузка...</span>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div class="user-badge" id="userBadge">
+        <span class="user-dot"></span>
+        <span class="user-name">Загрузка...</span>
+      </div>
+      <button type="button" class="settings-gear-btn" id="tab-btn-settings" role="tab" aria-selected="false"
+        aria-controls="tab-content-settings" title="Настройки">⚙️</button>
     </div>
   </div>
 
   <div class="tab-navigation" role="tablist">
     <button type="button" class="tab-btn active" id="tab-btn-general" role="tab" aria-selected="true"
-      aria-controls="tab-content-general">⚙️ Основные</button>
+      aria-controls="tab-content-general">🌐 Портал</button>
     <button type="button" class="tab-btn" id="tab-btn-archive" role="tab" aria-selected="false"
       aria-controls="tab-content-archive">🗄️ Архив</button>
     <button type="button" class="tab-btn" id="tab-btn-comp" role="tab" aria-selected="false"
@@ -36,38 +40,28 @@
   <form name="my">
 
     <div id="tab-content-general" class="tab-content" role="tabpanel" aria-labelledby="tab-btn-general">
-      <fieldset id="mainUser" class="card">
+      <fieldset id="workTimerPortal" class="card">
         <legend class="card-legend">
-          <span class="legend-icon">👤</span> Пользователь
+          <span class="legend-icon">⏰</span> Рабочий таймер и инфо-шапка
         </legend>
         <label class="toggle-label">
-          Режим администратора
+          Включить таймер (стакан)
           <div class="select-wrapper">
-            <select id="isAdmin">
+            <select id="timer">
               <option value="true">✅ Да</option>
               <option value="false">❌ Нет</option>
             </select>
           </div>
         </label>
-      </fieldset>
-
-      <fieldset id="dellNews" class="card">
-        <legend class="card-legend">
-          <span class="legend-icon">📰</span> Новости
-        </legend>
         <label class="toggle-label">
-          Удалять новости
+          Включить инфо-шапку
           <div class="select-wrapper">
-            <select id="news">
+            <select id="headerEnabled">
               <option value="true">✅ Да</option>
               <option value="false">❌ Нет</option>
             </select>
           </div>
         </label>
-        <button type="button" id="restoreNewsBtn" class="btn-secondary"
-          style="width: 100%; justify-content: center; margin-top: 8px;">
-          🔄 Восстановить скрытые новости
-        </button>
       </fieldset>
 
       <fieldset id="change" class="card">
@@ -162,84 +156,23 @@
         </div>
       </fieldset>
 
-      <fieldset id="workTimer" class="card">
+      <fieldset id="dellNews" class="card">
         <legend class="card-legend">
-          <span class="legend-icon">⏰</span> Рабочий таймер и инфо-шапка
+          <span class="legend-icon">📰</span> Новости
         </legend>
         <label class="toggle-label">
-          Включить таймер (стакан)
+          Удалять новости
           <div class="select-wrapper">
-            <select id="timer">
+            <select id="news">
               <option value="true">✅ Да</option>
               <option value="false">❌ Нет</option>
             </select>
           </div>
         </label>
-        <label class="toggle-label">
-          Включить инфо-шапку
-          <div class="select-wrapper">
-            <select id="headerEnabled">
-              <option value="true">✅ Да</option>
-              <option value="false">❌ Нет</option>
-            </select>
-          </div>
-        </label>
-        <div class="header-icon-selection collapse-section" id="header-icon-selection-section"
-          style="margin-top: 8px; margin-bottom: 8px;">
-          <label class="field-label" style="margin-bottom: 6px;">Значок в шапке</label>
-          <div class="emoji-grid" id="emoji-grid">
-            <!-- Will be dynamically populated in popup.js -->
-          </div>
-          <input type="hidden" id="userIcon" name="userIcon" value="👤">
-        </div>
-        <label class="toggle-label">
-          Переработки в отгулы
-          <div class="select-wrapper">
-            <select id="overtimeToComp" name="overtimeToComp">
-              <option value="true">✅ Да</option>
-              <option value="false" selected>❌ Нет</option>
-            </select>
-          </div>
-        </label>
-        <div class="timer_collapse collapse-section">
-          <div class="timer-grid">
-            <div class="time-inputs">
-              <label class="time-label">
-                <span class="time-icon">🌅</span>
-                <span class="time-text">Начало</span>
-                <input type="time" value="07:00" name="startDay" class="time-input">
-              </label>
-              <label class="time-label">
-                <span class="time-icon">🌆</span>
-                <span class="time-text">Конец</span>
-                <input type="time" value="16:00" name="endDay" class="time-input">
-              </label>
-              <label class="time-label">
-                <span class="time-icon">🎉</span>
-                <span class="time-text">Пятница</span>
-                <input type="time" value="14:45" readonly name="endDayF" class="time-input readonly">
-              </label>
-            </div>
-            <div class="breaks-panel">
-              <div class="breaks-title">ПЕРЕРЫВЫ</div>
-              <div class="break-item">
-                <time datetime="10:00">10:00</time>
-                <span class="break-dash">—</span>
-                <time datetime="10:15">10:15</time>
-              </div>
-              <div class="break-item">
-                <time datetime="11:45">11:45</time>
-                <span class="break-dash">—</span>
-                <time datetime="12:30">12:30</time>
-              </div>
-              <div class="break-item">
-                <time datetime="14:30">14:30</time>
-                <span class="break-dash">—</span>
-                <time datetime="14:45">14:45</time>
-              </div>
-            </div>
-          </div>
-        </div>
+        <button type="button" id="restoreNewsBtn" class="btn-secondary"
+          style="width: 100%; justify-content: center; margin-top: 8px;">
+          🔄 Восстановить скрытые новости
+        </button>
       </fieldset>
     </div>
 
@@ -362,6 +295,70 @@
           <button type="button" id="clearCompDb" class="btn-danger-small">
             🗑 Сбросить отгулы
           </button>
+        </div>
+      </fieldset>
+    </div>
+
+    <div id="tab-content-settings" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-btn-settings">
+      <fieldset id="mainUser" class="card">
+        <legend class="card-legend">
+          <span class="legend-icon">👤</span> Права доступа
+        </legend>
+        <label class="toggle-label">
+          Режим администратора
+          <div class="select-wrapper">
+            <select id="isAdmin">
+              <option value="true">✅ Да</option>
+              <option value="false">❌ Нет</option>
+            </select>
+          </div>
+        </label>
+      </fieldset>
+
+      <fieldset id="workTimerSettings" class="card">
+        <legend class="card-legend">
+          <span class="legend-icon">⚙️</span> Настройки пользователя
+        </legend>
+        
+        <div class="header-icon-selection" id="header-icon-selection-section"
+          style="margin-bottom: 12px;">
+          <label class="field-label" style="margin-bottom: 6px;">Аватар в шапке</label>
+          <div class="emoji-grid" id="emoji-grid">
+            <!-- Will be dynamically populated in popup.js -->
+          </div>
+          <input type="hidden" id="userIcon" name="userIcon" value="👤">
+        </div>
+
+        <label class="toggle-label">
+          Переработки в отгулы
+          <div class="select-wrapper">
+            <select id="overtimeToComp" name="overtimeToComp">
+              <option value="true">✅ Да</option>
+              <option value="false" selected>❌ Нет</option>
+            </select>
+          </div>
+        </label>
+
+        <div class="divider"></div>
+
+        <div class="timer-grid">
+          <div class="time-inputs" style="width: 100%;">
+            <label class="time-label">
+              <span class="time-icon">🌅</span>
+              <span class="time-text">Начало дня</span>
+              <input type="time" value="07:00" name="startDay" class="time-input">
+            </label>
+            <label class="time-label">
+              <span class="time-icon">🌆</span>
+              <span class="time-text">Конец дня</span>
+              <input type="time" value="16:00" name="endDay" class="time-input">
+            </label>
+            <label class="time-label">
+              <span class="time-icon">🎉</span>
+              <span class="time-text">Пятница</span>
+              <input type="time" value="14:45" readonly name="endDayF" class="time-input readonly">
+            </label>
+          </div>
         </div>
       </fieldset>
     </div>

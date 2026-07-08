@@ -173,8 +173,24 @@ function updateTimerCollapse() {
 	}
 }
 
+function updateCompTabVisibility() {
+	const select = form.elements.overtimeToComp;
+	const compTabBtn = document.getElementById('tab-btn-comp');
+	if (select && compTabBtn) {
+		const isEnabled = select.value === 'true';
+		compTabBtn.style.display = isEnabled ? '' : 'none';
+		if (!isEnabled && compTabBtn.classList.contains('active')) {
+			const generalTab = tabs[0];
+			if (generalTab && generalTab.btn) {
+				generalTab.btn.click();
+			}
+		}
+	}
+}
+
 form.elements.timer.addEventListener('change', updateTimerCollapse);
 form.elements.headerEnabled.addEventListener('change', updateTimerCollapse);
+form.elements.overtimeToComp.addEventListener('change', updateCompTabVisibility);
 
 
 function saveFieldData(field) {
@@ -299,6 +315,7 @@ function restoreSettings() {
 		}
 
 		updateTimerCollapse()
+		updateCompTabVisibility()
 
 		check()
 		initEmojiGrid()
@@ -319,11 +336,20 @@ form.save.addEventListener('click', (e)=>{
 	chrome.storage.local.get(['formFields'], ({formFields: oldFormFields}) => {
 		const formFields = {}
 		form.querySelectorAll('fieldset').forEach(fs => {
-			formFields[fs.id + 'Field'] = saveFieldData(fs)
+			let key = fs.id + 'Field';
+			if (fs.id === 'workTimerPortal' || fs.id === 'workTimerSettings') {
+				key = 'workTimerField';
+			}
+			formFields[key] = {
+				...(formFields[key] || {}),
+				...saveFieldData(fs)
+			}
 		})
 
 		// Keep all dismissed news IDs that were already in storage
-		formFields.dellNewsField.newsList = oldFormFields?.dellNewsField?.newsList || [];
+		if (formFields.dellNewsField) {
+			formFields.dellNewsField.newsList = oldFormFields?.dellNewsField?.newsList || [];
+		}
 
 		chrome.storage.local.set({formFields}, reloadActiveTab)
 	});
@@ -374,7 +400,8 @@ form.mainColor.addEventListener('input', (el)=>{
 const tabs = [
 	{ btn: document.getElementById('tab-btn-general'), content: document.getElementById('tab-content-general') },
 	{ btn: document.getElementById('tab-btn-archive'), content: document.getElementById('tab-content-archive') },
-	{ btn: document.getElementById('tab-btn-comp'), content: document.getElementById('tab-content-comp') }
+	{ btn: document.getElementById('tab-btn-comp'), content: document.getElementById('tab-content-comp') },
+	{ btn: document.getElementById('tab-btn-settings'), content: document.getElementById('tab-content-settings') }
 ];
 
 tabs.forEach(tab => {
