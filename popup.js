@@ -263,7 +263,8 @@ function restoreSettings() {
 					timer: 'false',
 					headerEnabled: 'false',
 					overtimeToComp: 'false',
-					userIcon: '👤'
+					userIcon: '👤',
+					timerTheme: 'beer'
 				},
 				mainUserField: {
 					isAdmin: 'false'
@@ -372,7 +373,8 @@ form.restore.addEventListener('click', (e)=>{
 			timer: 'false',
 			headerEnabled: 'false',
 			overtimeToComp: 'false',
-			userIcon: '👤'
+			userIcon: '👤',
+			timerTheme: 'beer'
 		},
 		mainUserField: {
 			isAdmin: 'false'

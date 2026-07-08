@@ -247,3 +247,214 @@ div .dot {
     90%  { opacity: 0.8; }
     100% { transform: scale(1.2) translateY(-200px); opacity: 0; }
 }
+
+/* ==============================
+   ДОПОЛНИТЕЛЬНЫЕ ЭЛЕМЕНТЫ (ПО УМОЛЧАНИЮ СКРЫТЫ)
+   ============================== */
+.bottle-neck, .stopwatch-top, .sun-arc-container {
+    display: none;
+}
+
+/* ==============================
+   ТЕМА: MOUNTAIN DEW (🟢)
+   ============================== */
+.theme-mountainDew .handle {
+    display: none;
+}
+.theme-mountainDew .glass_grooves {
+    display: none;
+}
+.theme-mountainDew .foam {
+    display: none;
+}
+.theme-mountainDew .wrapper {
+    background: linear-gradient(180deg, #dfff80 0%, #adff2f 40%, #32cd32 100%);
+}
+.theme-mountainDew .wrapper > div {
+    background: rgba(173, 255, 47, 0.4);
+    box-shadow: 0 0 4px rgba(173, 255, 47, 0.6);
+}
+
+/* ==============================
+   ТЕМА: COLA (🥤)
+   ============================== */
+.theme-cola .handle {
+    display: none;
+}
+.theme-cola .glass_grooves {
+    display: none;
+}
+.theme-cola .foam {
+    background: radial-gradient(circle at 50% 100%, #e0c8b0 0%, #ffffff 100%);
+    box-shadow: 
+        0 -4px 8px rgba(245, 230, 211, 0.9),
+        -15px -4px 0 4px #ffffff,
+        15px -4px 0 4px #ffffff,
+        inset 0 -6px 12px rgba(138, 64, 0, 0.2);
+}
+.theme-cola .wrapper {
+    background: linear-gradient(180deg, #3c200c 0%, #201006 40%, #0d0502 100%);
+}
+.theme-cola #percent {
+    color: #f5e6d3;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+}
+
+/* ==============================
+   ТЕМА: БУТЫЛКА (🍾)
+   ============================= */
+.theme-bottle .handle {
+    display: none;
+}
+.theme-bottle .glass_grooves {
+    display: none;
+}
+.theme-bottle .foam {
+    display: none;
+}
+.theme-bottle .glass_container {
+    border-radius: 20px 20px 30px 30px;
+    border-bottom: 16px solid rgba(180, 180, 180, 0.6);
+}
+.theme-bottle .bottle-neck {
+    display: block;
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 40px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
+    border: 3.5px solid rgba(200, 200, 200, 0.5);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    z-index: 3;
+}
+.theme-bottle .wrapper {
+    background: linear-gradient(180deg, #e6c300 0%, #b38600 40%, #805c00 100%);
+}
+
+/* ==============================
+   ТЕМА: СЕКУНДОМЕР (⏱️)
+   ============================== */
+.theme-stopwatch .handle {
+    display: none;
+}
+.theme-stopwatch .glass_grooves {
+    display: none;
+}
+.theme-stopwatch .foam {
+    display: none;
+}
+.theme-stopwatch .glass {
+    height: 210px;
+}
+.theme-stopwatch .glass_container {
+    border-radius: 50% !important;
+    border: 6px solid rgba(180, 180, 180, 0.8) !important;
+    border-bottom: 6px solid rgba(180, 180, 180, 0.8) !important;
+    height: 140px;
+    width: 140px;
+    top: 35px;
+}
+.theme-stopwatch .stopwatch-top {
+    display: block;
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 20px;
+    background: rgba(180, 180, 180, 0.8);
+    border: 3.5px solid rgba(150, 150, 150, 0.8);
+    border-radius: 3px;
+    z-index: 2;
+}
+.theme-stopwatch .stopwatch-top::after {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 8px;
+    background: rgba(120, 120, 120, 0.9);
+    border-radius: 2px 2px 0 0;
+}
+.theme-stopwatch .wrapper {
+    background: linear-gradient(180deg, #5dade2 0%, #2e86c1 50%, #1b4f72 100%);
+}
+.theme-stopwatch #percent {
+    color: #fff;
+    font-family: monospace;
+    font-size: 32px;
+    text-shadow: 0 0 10px rgba(93, 173, 226, 0.8);
+}
+
+/* ==============================
+   ТЕМА: СОЛНЦЕ (☀️)
+   ============================== */
+.theme-sun .glass_container {
+    display: none;
+}
+.theme-sun .handle {
+    display: none;
+}
+.theme-sun .glass_grooves {
+    display: none;
+}
+.theme-sun .foam {
+    display: none;
+}
+.theme-sun .sun-arc-container {
+    display: block;
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.theme-sun .sun-arc-path {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border: 2px dashed rgba(255, 235, 59, 0.5);
+    border-radius: 50%;
+    top: 60px;
+    left: 10px;
+    clip-path: inset(0 0 60px 0);
+}
+.theme-sun .earth-element {
+    position: absolute;
+    width: 140px;
+    height: 40px;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(180deg, #4caf50 0%, #2e7d32 100%);
+    border-radius: 70px 70px 0 0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    border-top: 1px solid rgba(255,255,255,0.2);
+}
+.theme-sun .sun-element {
+    position: absolute;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: left 1.5s cubic-bezier(0.25, 1, 0.5, 1), top 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+    filter: drop-shadow(0 0 8px rgba(255, 235, 59, 0.8));
+    z-index: 4;
+}
+.theme-sun .sun-percent {
+    position: absolute;
+    top: 85px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}

@@ -679,12 +679,10 @@ option {
 .settings-gear-btn:hover {
   color: var(--accent);
   transform: rotate(45deg);
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .settings-gear-btn.active {
   color: var(--accent);
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .tab-btn {

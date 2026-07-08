@@ -193,10 +193,10 @@
 		});
 	}
 
-	function changePivo(workTimerField, user) {
+	function changePivo(workTimerField, user, theme = 'beer') {
 		const root = getShadowRoot();
 		if (!root) {
-			setTimeout(() => changePivo(workTimerField, user), 50);
+			setTimeout(() => changePivo(workTimerField, user, theme), 50);
 			return;
 		}
 		const percentDiv = root.querySelector('#percent');
@@ -204,9 +204,29 @@
 		const glass = root.querySelector('.glass');
 
 		if (!percentDiv || !wrapper || !glass) {
-			setTimeout(() => changePivo(workTimerField, user), 50);
+			setTimeout(() => changePivo(workTimerField, user, theme), 50);
 			return;
 		}
+
+		const satMsgs = {
+			beer: ['Суббота же', 'Вот тебе пиво', 'А я домой!'],
+			mountainDew: ['Суббота же', 'Вот тебе Dew', 'А я домой!'],
+			cola: ['Суббота же', 'Вот тебе Кола', 'А я домой!'],
+			bottle: ['Суббота же', 'Вот бутылка', 'А я домой!'],
+			stopwatch: ['Суббота же', 'Время отдыхать', 'А я домой!'],
+			sun: ['Суббота же', 'Солнце светит для отдыха', 'А я домой!']
+		};
+		const satMsg = satMsgs[theme] || satMsgs.beer;
+
+		const finishMsgs = {
+			beer: ['Пиво налито!', 'Пора домой!!'],
+			mountainDew: ['Dew налит!', 'Пора домой!!'],
+			cola: ['Кола налита!', 'Пора домой!!'],
+			bottle: ['Бутылка полна!', 'Пора домой!!'],
+			stopwatch: ['Время вышло!', 'Пора домой!!'],
+			sun: ['Солнце село!', 'Пора домой!!']
+		};
+		const finishMsg = finishMsgs[theme] || finishMsgs.beer;
 
 		const start = workTimerField.startDay || '07:00';
 		const end = workTimerField.endDay || '16:00';
@@ -239,7 +259,7 @@
 		if (new Date().getDay() === 6) {
 			wrapper.style.height = '100%';
 			drawBubbles(100, wrapper);
-			notifications(msg.std);
+			notifications(satMsg);
 			glass.style.animation = "cheers 1s linear 10";
 			return;
 		}
@@ -364,13 +384,32 @@
 				drawBubbles(1, wrapper);
 			}
 
+			if (theme === 'sun') {
+				const sunEl = root.querySelector('.sun-element');
+				if (sunEl) {
+					const pct = Math.max(0, Math.min(100, percent));
+					const theta = (pct / 100) * Math.PI;
+					const R = 60;
+					const cx = 70;
+					const cy = 120;
+					const x = cx + R * Math.cos(theta);
+					const y = cy - R * Math.sin(theta);
+					sunEl.style.left = `${x - 12}px`;
+					sunEl.style.top = `${y - 12}px`;
+				}
+				const sunPercent = root.querySelector('#sun-percent');
+				if (sunPercent) {
+					sunPercent.textContent = `${percent}%`;
+				}
+			}
+
 			changeWrapperTimer = setTimeout(changeWrapper, delay);
 
 			if (percent >= 100) {
 				clearTimeout(changeWrapperTimer);
 				percentDiv.style.animation = "slide 8s ease-in";
 				setTimeout(() => {
-					notifications(['Пиво налито!', 'Пора домой!!']);
+					notifications(finishMsg);
 					percentDiv.style.display = 'none';
 					glass.style.animation = "cheers 1s linear 10";
 				}, 7000);
@@ -378,7 +417,7 @@
 		}
 	}
 
-	async function addPivo() {
+	async function addPivo(theme = 'beer') {
 		const host = document.createElement('div');
 		host.id = 'pivo';
 		host.style.cssText = `
@@ -399,9 +438,11 @@
 
 		const inner = document.createElement('div');
 		inner.innerHTML = `
-			<div class="container">
+			<div class="container theme-${theme}">
 				<div class="glass">
+					<div class="stopwatch-top"></div>
 					<div class="handle"></div>
+					<div class="bottle-neck"></div>
 					<div class="glass_container">
 						<div class="wrapper">
 							<div class="foam"></div>
@@ -412,6 +453,12 @@
 							<div class="groove"></div>
 						</div>
 						<span id="percent"></span>
+					</div>
+					<div class="sun-arc-container">
+						<div class="sun-arc-path"></div>
+						<div class="sun-element">☀️</div>
+						<div class="earth-element"></div>
+						<span id="sun-percent" class="sun-percent">0%</span>
 					</div>
 				</div>
 				<div class="notifications">
@@ -438,11 +485,11 @@
 		const user = window.delProp.user;
 		if (!formFields || !formFields.workTimerField) return;
 
-		const { timer: timerOpt } = formFields.workTimerField;
+		const { timer: timerOpt, timerTheme = 'beer' } = formFields.workTimerField;
 		if (timerOpt === 'true') {
 			if (!document.body) return;
-			addPivo().then(() => {
-				changePivo(formFields.workTimerField, user);
+			addPivo(timerTheme).then(() => {
+				changePivo(formFields.workTimerField, user, timerTheme);
 			});
 		}
 	}
