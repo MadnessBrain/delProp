@@ -138,8 +138,8 @@ window.initProjectFilter = function(treeContainer) {
 
 	searchInput.addEventListener('input', () => {
 		const val = searchInput.value.trim();
-		// If query contains a dot or is numeric, delegate to smart hierarchical search
-		if (val.includes('.') || /^\d+$/.test(val)) {
+		// If query contains a dot or comma or is numeric, delegate to smart hierarchical search
+		if (val.includes('.') || val.includes(',') || /^\d+$/.test(val)) {
 			document.dispatchEvent(new CustomEvent("delPropTrigger", { 
 				detail: { action: "smartSearch", query: val } 
 			}));

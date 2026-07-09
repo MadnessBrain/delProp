@@ -228,10 +228,13 @@ function resetTreeVisibility(Tree) {
 	}
 }
 
-function filterProjectsVisibility(Tree, activeProjectId) {
+function filterProjectsVisibility(Tree, projectPrefix) {
 	const projectIds = Tree.getSubItems("0").split(",").filter(Boolean);
+	const query = projectPrefix.toLowerCase().trim();
 	for (const pid of projectIds) {
-		setNodeVisible(Tree, pid, pid === activeProjectId);
+		const txt = Tree.getItemText(pid).trim().toLowerCase();
+		const isMatch = !query || txt.includes(query);
+		setNodeVisible(Tree, pid, isMatch);
 	}
 }
 
@@ -240,7 +243,7 @@ function filterGroupsVisibility(Tree, activeProjectId, groupPrefix) {
 	const query = groupPrefix.toLowerCase().trim();
 	for (const gid of groupIds) {
 		const txt = Tree.getItemText(gid).trim().toLowerCase();
-		const isMatch = !query || txt.startsWith(query);
+		const isMatch = !query || txt.includes(query);
 		setNodeVisible(Tree, gid, isMatch);
 	}
 }
@@ -286,7 +289,9 @@ window.searchAndExpandTree = function(query, triggerEnter = false) {
 	const Tree = Layout.cells("a").getAttachedObject();
 	if (!Tree) return;
 
-	const trimmed = query.trim();
+	// Normalize query by replacing commas with dots
+	const normalizedQuery = (query || "").replace(/,/g, '.');
+	const trimmed = normalizedQuery.trim();
 	if (!trimmed) {
 		resetTreeVisibility(Tree);
 		return;
@@ -300,95 +305,131 @@ window.searchAndExpandTree = function(query, triggerEnter = false) {
 	const groupCode = parts[1] ? parts[1].trim() : '';
 	const drawingCode = parts[2] ? parts[2].trim() : '';
 
-	// 1. Find matching project
+	// 1. Filter project nodes based on query prefix
+	filterProjectsVisibility(Tree, projectCode);
+
+	// Find the matching project node we need to expand/traverse (exact, then startsWith, then includes)
 	const projectIds = Tree.getSubItems("0").split(",").filter(Boolean);
 	let activeProjectId = null;
 
 	for (const pid of projectIds) {
-		const txt = Tree.getItemText(pid).trim();
-		if (txt === projectCode) {
+		const txt = Tree.getItemText(pid).trim().toLowerCase();
+		if (txt === projectCode.toLowerCase()) {
 			activeProjectId = pid;
 			break;
 		}
 	}
-
 	if (!activeProjectId) {
-		// Project not found, revert to default matching
-		resetTreeVisibility(Tree);
+		for (const pid of projectIds) {
+			const txt = Tree.getItemText(pid).trim().toLowerCase();
+			if (txt.startsWith(projectCode.toLowerCase())) {
+				activeProjectId = pid;
+				break;
+			}
+		}
+	}
+	if (!activeProjectId) {
+		for (const pid of projectIds) {
+			const txt = Tree.getItemText(pid).trim().toLowerCase();
+			if (txt.includes(projectCode.toLowerCase())) {
+				activeProjectId = pid;
+				break;
+			}
+		}
+	}
+
+	if (partCount < 2) {
 		return;
 	}
 
-	// Hide other projects
-	filterProjectsVisibility(Tree, activeProjectId);
+	if (!activeProjectId) {
+		return;
+	}
 
 	// 2. Filter groups if we typed project.group
-	if (partCount >= 2) {
-		// If project is collapsed, expand it!
-		if (Tree.getOpenState(activeProjectId) !== 1) {
-			Tree.openItem(activeProjectId);
+	// If project is collapsed, expand it!
+	if (Tree.getOpenState(activeProjectId) !== 1) {
+		Tree.openItem(activeProjectId);
+		dispatchBlockInput(true);
+		
+		waitForChildrenLoad(Tree, activeProjectId, () => {
+			dispatchBlockInput(false);
+			window.searchAndExpandTree(query, triggerEnter);
+		});
+		return;
+	}
+
+	// Project is expanded! Filter groups
+	filterGroupsVisibility(Tree, activeProjectId, groupCode);
+
+	const groupIds = Tree.getSubItems(activeProjectId).split(",").filter(Boolean);
+	let activeGroupId = null;
+
+	for (const gid of groupIds) {
+		const txt = Tree.getItemText(gid).trim().toLowerCase();
+		if (txt === groupCode.toLowerCase()) {
+			activeGroupId = gid;
+			break;
+		}
+	}
+	if (!activeGroupId) {
+		for (const gid of groupIds) {
+			const txt = Tree.getItemText(gid).trim().toLowerCase();
+			if (txt.startsWith(groupCode.toLowerCase())) {
+				activeGroupId = gid;
+				break;
+			}
+		}
+	}
+	if (!activeGroupId) {
+		for (const gid of groupIds) {
+			const txt = Tree.getItemText(gid).trim().toLowerCase();
+			if (txt.includes(groupCode.toLowerCase())) {
+				activeGroupId = gid;
+				break;
+			}
+		}
+	}
+
+	// 3. Filter drawings if we typed project.group.drawing
+	if (partCount >= 3 && activeGroupId) {
+		// If group is collapsed, expand it!
+		if (Tree.getOpenState(activeGroupId) !== 1) {
+			Tree.openItem(activeGroupId);
 			dispatchBlockInput(true);
 			
-			waitForChildrenLoad(Tree, activeProjectId, () => {
+			waitForChildrenLoad(Tree, activeGroupId, () => {
 				dispatchBlockInput(false);
 				window.searchAndExpandTree(query, triggerEnter);
 			});
 			return;
 		}
 
-		// Project is expanded! Filter groups
-		filterGroupsVisibility(Tree, activeProjectId, groupCode);
+		// Group is expanded! Filter drawings
+		filterDrawingsVisibility(Tree, activeGroupId, drawingCode);
 
-		const groupIds = Tree.getSubItems(activeProjectId).split(",").filter(Boolean);
-		let activeGroupId = null;
+		// 4. If user hit Enter, attempt to select and open matching drawing
+		if (triggerEnter) {
+			const drawingIds = Tree.getSubItems(activeGroupId).split(",").filter(Boolean);
+			let matchedDrawingId = null;
 
-		for (const gid of groupIds) {
-			const txt = Tree.getItemText(gid).trim();
-			if (txt === groupCode) {
-				activeGroupId = gid;
-				break;
+			for (const did of drawingIds) {
+				const txt = Tree.getItemText(did).trim().toLowerCase();
+				const drawingParts = txt.split('.');
+				const lastPart = drawingParts[drawingParts.length - 1] || '';
+
+				if (txt === drawingCode.toLowerCase() || lastPart === drawingCode.toLowerCase() || txt === trimmed.toLowerCase()) {
+					matchedDrawingId = did;
+					break;
+				}
 			}
-		}
 
-		// 3. Filter drawings if we typed project.group.drawing
-		if (partCount >= 3 && activeGroupId) {
-			// If group is collapsed, expand it!
-			if (Tree.getOpenState(activeGroupId) !== 1) {
-				Tree.openItem(activeGroupId);
-				dispatchBlockInput(true);
+			if (matchedDrawingId) {
+				// Select drawing and trigger double click or select event
+				Tree.selectItem(matchedDrawingId, true);
 				
-				waitForChildrenLoad(Tree, activeGroupId, () => {
-					dispatchBlockInput(false);
-					window.searchAndExpandTree(query, triggerEnter);
-				});
-				return;
-			}
-
-			// Group is expanded! Filter drawings
-			filterDrawingsVisibility(Tree, activeGroupId, drawingCode);
-
-			// 4. If user hit Enter, attempt to select and open matching drawing
-			if (triggerEnter) {
-				const drawingIds = Tree.getSubItems(activeGroupId).split(",").filter(Boolean);
-				let matchedDrawingId = null;
-
-				for (const did of drawingIds) {
-					const txt = Tree.getItemText(did).trim().toLowerCase();
-					const drawingParts = txt.split('.');
-					const lastPart = drawingParts[drawingParts.length - 1] || '';
-
-					if (txt === drawingCode.toLowerCase() || lastPart === drawingCode.toLowerCase() || txt === trimmed.toLowerCase()) {
-						matchedDrawingId = did;
-						break;
-					}
-				}
-
-				if (matchedDrawingId) {
-					// Select drawing and trigger double click or select event
-					Tree.selectItem(matchedDrawingId, true);
-					
-					// Clear input
-					dispatchClearInput();
-				}
+				// Clear input
+				dispatchClearInput();
 			}
 		}
 	}
