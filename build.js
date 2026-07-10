@@ -182,8 +182,10 @@ const archiveDest = path.join(distDir, 'archive');
 
 // 1. Process specific source files for Archive version
 const jsFiles = [
+	['utils/time.js', 'utils/time.js', true],
 	['archive/tabSync.js', 'archive/tabSync.js', true],
 	['archive/projectFilter.js', 'archive/projectFilter.js', true],
+	['archive/archiveTimer.js', 'archive/archiveTimer.js', true],
 	['archive/saveAddres.js', 'archive/saveAddres.js', true],
 	['archive/patch.js', 'archive/patch.js', false],
 	['background.js', 'background.js', false]

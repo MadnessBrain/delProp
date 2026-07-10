@@ -13,16 +13,10 @@ const recordHandlers = [];
 // Shared helper methods
 window.delProp.helpers = {
 	timeNorm(time) {
-		if (!time || typeof time !== 'string') { time = '07:00'; }
-		let t = time.split(':');
-		t.push('00');
-		return new Date().setHours(...t);
+		return window.delProp.timeHelpers.timeNorm(time);
 	},
 	parseTimeToMinutes(timeStr) {
-		if (!timeStr || typeof timeStr !== 'string') return null;
-		const parts = timeStr.split(':').map(Number);
-		if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
-		return parts[0] * 60 + parts[1];
+		return window.delProp.timeHelpers.parseTimeToMinutes(timeStr);
 	},
 	formatLateness(min) {
 		const h = Math.floor(min / 60);
@@ -30,25 +24,7 @@ window.delProp.helpers = {
 		return h > 0 ? `${h}ч ${m}м` : `${m}м`;
 	},
 	getPerDay(start, end) {
-		const now = Date.now();
-		const linear = (now - start) / (end - start);
-		const val = linear < 0 ? 0 : linear > 1 ? 1 : linear;
-		const percent = Math.floor(val * 100);
-		const remaining = end - now;
-
-		let delay;
-		if (linear < 0) {
-			delay = start - now;
-		} else if (linear > 1) {
-			delay = 60000;
-		} else {
-			delay = Math.max(5000, remaining * 0.01);
-		}
-
-		return {
-			percent,
-			delay
-		};
+		return window.delProp.timeHelpers.getPerDay(start, end);
 	}
 };
 

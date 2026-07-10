@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "delProp",
   "description": "Улучшайзер",
-  "version": "1.2.7",
+  "version": "1.2.9",
   "author": "R&L",
   "content_scripts": [
     {
@@ -10,6 +10,7 @@
         "http://pcserv.vympel/*"
       ],
       "js": [
+        "utils/time.js",
         "home/core.js",
         "home/news.js",
         "home/sidebar.js",
@@ -29,8 +30,10 @@
         "http://archive.vympel/*"
       ],
       "js": [
+        "utils/time.js",
         "archive/tabSync.js",
         "archive/projectFilter.js",
+        "archive/archiveTimer.js",
         "archive/saveAddres.js"
       ],
       "css": [
