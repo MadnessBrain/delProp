@@ -84,8 +84,11 @@
 
 	function revalidateCache(url, key, id) {
 		fetch(url)
-			.then(r => r.text())
-			.then(newXml => {
+			.then(r => r.arrayBuffer())
+			.then(buf => {
+				// Server returns windows-1251 encoded XML; decode properly
+				const decoder = new TextDecoder('windows-1251');
+				const newXml = decoder.decode(buf);
 				const cachedObjStr = localStorage.getItem(key);
 				let cachedXml = '';
 				if (cachedObjStr) {

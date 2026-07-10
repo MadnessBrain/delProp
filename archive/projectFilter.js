@@ -9,7 +9,9 @@ window.applyFilter = function(treeContainer) {
 	const pinToggle = treeContainer.querySelector('.delprop-pin-toggle');
 	if (!searchInput || !pinToggle) return;
 
-	const query = searchInput.value.toLowerCase().trim();
+	// For hierarchical queries (with . or ,), only use the project part for matching
+	const rawQuery = searchInput.value.toLowerCase().trim();
+	const query = rawQuery.replace(/[,]/g, '.').split('.')[0].trim();
 	const showPinnedOnly = pinToggle.classList.contains('active');
 
 	const mainTableStyle = treeContainer.querySelector('.containerTableStyle');
@@ -144,6 +146,11 @@ window.initProjectFilter = function(treeContainer) {
 				detail: { action: "smartSearch", query: val } 
 			}));
 		} else {
+			// Always reset DHTMLX tree visibility first (undo any previous smartSearch hiding)
+			document.dispatchEvent(new CustomEvent("delPropTrigger", { 
+				detail: { action: "smartSearch", query: "" } 
+			}));
+			// Then apply DOM-level filter for text and pins
 			window.applyFilter(treeContainer);
 		}
 	});
