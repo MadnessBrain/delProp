@@ -9,9 +9,15 @@ window.applyFilter = function(treeContainer) {
 	const pinToggle = treeContainer.querySelector('.delprop-pin-toggle');
 	if (!searchInput || !pinToggle) return;
 
-	// For hierarchical queries (with . or ,), only use the project part for matching
-	const rawQuery = searchInput.value.toLowerCase().trim();
-	const query = rawQuery.replace(/[,]/g, '.').split('.')[0].trim();
+	const rawQuery = searchInput.value.trim();
+
+	// If hierarchical smart search is active, skip DOM filtering —
+	// searchAndExpandTree manages visibility via DHTMLX tree nodes
+	if (rawQuery.includes('.') || rawQuery.includes(',') || /^\d+$/.test(rawQuery)) {
+		return;
+	}
+
+	const query = rawQuery.toLowerCase();
 	const showPinnedOnly = pinToggle.classList.contains('active');
 
 	const mainTableStyle = treeContainer.querySelector('.containerTableStyle');

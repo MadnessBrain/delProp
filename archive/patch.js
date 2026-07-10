@@ -25,7 +25,9 @@
 	};
 
 	XMLHttpRequest.prototype.send = function(body) {
-		if (this._delpropIsCacheable) {
+		const isCacheEnabled = document.documentElement.dataset.delpropCacheEnabled !== 'false';
+
+		if (this._delpropIsCacheable && isCacheEnabled) {
 			const cacheKey = this._delpropCacheKey;
 			const nodeId = this._delpropNodeId;
 			const url = this._delpropUrl;

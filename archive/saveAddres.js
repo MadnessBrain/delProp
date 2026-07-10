@@ -104,13 +104,18 @@ chrome.storage.local.get(['formFields', 'archiveHashes', 'pinnedProjects', 'arch
 		enabled: 'true',
 		saveTabs: 'true',
 		syncDocName: 'true',
-		projectFilter: 'true'
+		projectFilter: 'true',
+		treeCacheEnabled: 'true'
 	} : (data.formFields?.archiveField || {
 		enabled: 'true',
 		saveTabs: 'true',
 		syncDocName: 'true',
-		projectFilter: 'true'
+		projectFilter: 'true',
+		treeCacheEnabled: 'true'
 	});
+
+	// Pass cache setting to page context (patch.js reads this)
+	document.documentElement.dataset.delpropCacheEnabled = window.archiveState.archiveSettings.treeCacheEnabled || 'true';
 	window.archiveState.archiveHashes = data.archiveHashes || {};
 	window.archiveState.pinnedProjects = new Set(data.pinnedProjects || []);
 	window.archiveState.archiveShowPinnedOnly = data.archiveShowPinnedOnly === true || data.archiveShowPinnedOnly === 'true';
@@ -154,13 +159,17 @@ chrome.storage.onChanged.addListener((changes, area) => {
 			enabled: 'true',
 			saveTabs: 'true',
 			syncDocName: 'true',
-			projectFilter: 'true'
+			projectFilter: 'true',
+			treeCacheEnabled: 'true'
 		} : (changes.formFields.newValue?.archiveField || {
 			enabled: 'true',
 			saveTabs: 'true',
 			syncDocName: 'true',
-			projectFilter: 'true'
+			projectFilter: 'true',
+			treeCacheEnabled: 'true'
 		});
+		// Update cache setting for page context
+		document.documentElement.dataset.delpropCacheEnabled = window.archiveState.archiveSettings.treeCacheEnabled || 'true';
 		if (window.archiveState.archiveSettings.enabled === 'true') {
 			mainObserver.observe(document.body, { childList: true, subtree: true });
 		} else {

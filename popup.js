@@ -273,7 +273,8 @@ function restoreSettings() {
 					enabled: 'true',
 					saveTabs: 'true',
 					syncDocName: 'true',
-					projectFilter: 'true'
+					projectFilter: 'true',
+					treeCacheEnabled: 'true'
 				}
 			}
 
@@ -383,7 +384,8 @@ form.restore.addEventListener('click', (e)=>{
 			enabled: 'true',
 			saveTabs: 'true',
 			syncDocName: 'true',
-			projectFilter: 'true'
+			projectFilter: 'true',
+			treeCacheEnabled: 'true'
 		}
 	}
 	chrome.storage.local.set({formFields: defaultFields}, () => {
