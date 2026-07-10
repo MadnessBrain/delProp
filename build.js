@@ -184,6 +184,8 @@ const archiveDest = path.join(distDir, 'archive');
 const jsFiles = [
 	['utils/time.js', 'utils/time.js', true],
 	['archive/tabSync.js', 'archive/tabSync.js', true],
+	['archive/filterHistory.js', 'archive/filterHistory.js', true],
+	['archive/filterAutocomplete.js', 'archive/filterAutocomplete.js', true],
 	['archive/projectFilter.js', 'archive/projectFilter.js', true],
 	['archive/archiveTimer.js', 'archive/archiveTimer.js', true],
 	['archive/saveAddres.js', 'archive/saveAddres.js', true],

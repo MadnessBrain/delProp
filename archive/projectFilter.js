@@ -165,6 +165,7 @@ window.initProjectFilter = function(treeContainer) {
 		if (e.key === 'Enter') {
 			const val = searchInput.value.trim();
 			if (val) {
+				window.saveToFilterHistory(val);
 				document.dispatchEvent(new CustomEvent("delPropTrigger", { 
 					detail: { action: "smartSearchEnter", query: val } 
 				}));
@@ -232,6 +233,14 @@ window.initProjectFilter = function(treeContainer) {
 		// Initial rendering of pins
 		window.renderPins(treeContainer);
 		window.applyFilter(treeContainer);
+	}
+
+	// Initialize history and autocomplete modules
+	if (typeof window.initFilterHistory === 'function') {
+		window.initFilterHistory(searchInput);
+	}
+	if (typeof window.initFilterAutocomplete === 'function') {
+		window.initFilterAutocomplete(searchInput);
 	}
 };
 

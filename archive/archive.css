@@ -104,3 +104,80 @@ div.gridbox table.row20px tr td {
 	background-color: #f0fdf4 !important;
 	/* Soft light-green background */
 }
+
+/* Autocomplete Dropdown */
+.delprop-autocomplete-dropdown {
+	position: absolute;
+	top: 100%;
+	left: 6px;
+	right: 6px;
+	max-height: 240px;
+	overflow-y: auto;
+	background: #fff;
+	border: 1px solid #a4bed4;
+	border-top: none;
+	border-radius: 0 0 4px 4px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+	z-index: 10000;
+	animation: delprop-dropdown-in 0.12s ease-out;
+}
+
+@keyframes delprop-dropdown-in {
+	from { opacity: 0; transform: translateY(-4px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+.delprop-autocomplete-dropdown::-webkit-scrollbar {
+	width: 6px;
+}
+
+.delprop-autocomplete-dropdown::-webkit-scrollbar-thumb {
+	background: #a4bed4;
+	border-radius: 3px;
+}
+
+.delprop-autocomplete-item {
+	padding: 6px 10px;
+	font-size: 12px;
+	font-family: Tahoma, Arial, sans-serif;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	border-bottom: 1px solid #f0f0f0;
+	transition: background-color 0.08s;
+}
+
+.delprop-autocomplete-item:last-child {
+	border-bottom: none;
+}
+
+.delprop-autocomplete-item:hover,
+.delprop-autocomplete-item.delprop-autocomplete-active {
+	background-color: #e8f0fe;
+}
+
+.delprop-autocomplete-item strong {
+	color: #1a56db;
+}
+
+.delprop-autocomplete-title {
+	margin-left: auto;
+	font-size: 10px;
+	color: #888;
+	max-width: 180px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.delprop-autocomplete-hint {
+	color: #888;
+	font-style: italic;
+	cursor: default;
+}
+
+.delprop-autocomplete-hint:hover {
+	background-color: transparent;
+}

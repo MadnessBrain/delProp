@@ -145,6 +145,127 @@ document.addEventListener("delPropTrigger", (e) => {
 				localStorage.removeItem(key);
 			}
 		}
+	} else if (action === "getAutocompleteSuggestions") {
+		if (typeof MainTabBar === 'undefined') return;
+		const actvId = MainTabBar.getActiveTab();
+		if (!actvId) return;
+		const Layout = MainTabBar.cells(actvId).getAttachedObject();
+		if (!Layout) return;
+		const Tree = Layout.cells("a").getAttachedObject();
+		if (!Tree) return;
+
+		const normalizedQuery = (query || "").replace(/,/g, '.').trim();
+		const parts = normalizedQuery.split('.');
+		const suggestions = [];
+		const MAX_SUGGESTIONS = 15;
+
+		if (parts.length <= 1) {
+			// Suggest projects
+			const projectCode = parts[0] || '';
+			const projectIds = Tree.getSubItems("0").split(",").filter(Boolean);
+			const q = projectCode.toLowerCase();
+			for (const pid of projectIds) {
+				const txt = Tree.getItemText(pid).trim();
+				if (!q || txt.toLowerCase().includes(q)) {
+					// Try to get project title from the tree node
+					const nodeObj = Tree._idpull[pid];
+					let title = '';
+					if (nodeObj && nodeObj.htmlNode) {
+						const tr = nodeObj.htmlNode.querySelector('tr[title]');
+						if (tr) title = tr.getAttribute('title') || '';
+					}
+					suggestions.push({ text: txt, fullPath: txt, title: title });
+					if (suggestions.length >= MAX_SUGGESTIONS) break;
+				}
+			}
+		} else if (parts.length === 2) {
+			// Suggest groups within a project
+			const projectCode = parts[0];
+			const groupCode = parts[1] || '';
+			const projectIds = Tree.getSubItems("0").split(",").filter(Boolean);
+			let activeProjectId = null;
+			for (const pid of projectIds) {
+				const txt = Tree.getItemText(pid).trim().toLowerCase();
+				if (txt === projectCode.toLowerCase()) { activeProjectId = pid; break; }
+			}
+			if (!activeProjectId) {
+				for (const pid of projectIds) {
+					const txt = Tree.getItemText(pid).trim().toLowerCase();
+					if (txt.startsWith(projectCode.toLowerCase())) { activeProjectId = pid; break; }
+				}
+			}
+
+			if (activeProjectId) {
+				const subItems = Tree.getSubItems(activeProjectId);
+				if (subItems && subItems.split(",").filter(Boolean).length > 0) {
+					const groupIds = subItems.split(",").filter(Boolean);
+					const gq = groupCode.toLowerCase();
+					for (const gid of groupIds) {
+						const txt = Tree.getItemText(gid).trim();
+						if (!gq || txt.toLowerCase().includes(gq)) {
+							suggestions.push({
+								text: txt,
+								fullPath: projectCode + '.' + txt
+							});
+							if (suggestions.length >= MAX_SUGGESTIONS) break;
+						}
+					}
+				} else {
+					suggestions.push({
+						text: '💡 Раскройте проект для подсказок',
+						hint: true
+					});
+				}
+			}
+		} else if (parts.length >= 3) {
+			// Suggest drawings within a group
+			const projectCode = parts[0];
+			const groupCode = parts[1];
+			const drawingCode = parts[2] || '';
+			const projectIds = Tree.getSubItems("0").split(",").filter(Boolean);
+			let activeProjectId = null;
+			for (const pid of projectIds) {
+				if (Tree.getItemText(pid).trim().toLowerCase() === projectCode.toLowerCase()) { activeProjectId = pid; break; }
+			}
+			if (activeProjectId) {
+				const groupIds = (Tree.getSubItems(activeProjectId) || '').split(",").filter(Boolean);
+				let activeGroupId = null;
+				for (const gid of groupIds) {
+					if (Tree.getItemText(gid).trim().toLowerCase() === groupCode.toLowerCase()) { activeGroupId = gid; break; }
+				}
+				if (!activeGroupId) {
+					for (const gid of groupIds) {
+						if (Tree.getItemText(gid).trim().toLowerCase().startsWith(groupCode.toLowerCase())) { activeGroupId = gid; break; }
+					}
+				}
+				if (activeGroupId) {
+					const drawingItems = Tree.getSubItems(activeGroupId);
+					if (drawingItems && drawingItems.split(",").filter(Boolean).length > 0) {
+						const drawingIds = drawingItems.split(",").filter(Boolean);
+						const dq = drawingCode.toLowerCase();
+						for (const did of drawingIds) {
+							const txt = Tree.getItemText(did).trim();
+							if (!dq || txt.toLowerCase().includes(dq)) {
+								suggestions.push({
+									text: txt,
+									fullPath: projectCode + '.' + groupCode + '.' + txt
+								});
+								if (suggestions.length >= MAX_SUGGESTIONS) break;
+							}
+						}
+					} else {
+						suggestions.push({
+							text: '💡 Раскройте группу для подсказок',
+							hint: true
+						});
+					}
+				}
+			}
+		}
+
+		document.dispatchEvent(new CustomEvent("delPropResponse", {
+			detail: { action: "autocompleteSuggestions", suggestions: suggestions }
+		}));
 	} else if (typeof MainTabBar === 'undefined' || typeof GetTabIndexByTabID === 'undefined') {
 		return;
 	} else {
