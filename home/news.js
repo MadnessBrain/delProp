@@ -147,7 +147,7 @@
 							
 							customNode.innerHTML = `
 								<div style="font-weight: bold; color: #1e3a8a; margin-bottom: 4px; font-family: inherit; padding-right: 20px;">📣 ${latestNews.title}</div>
-								<div style="font-size: 11px; line-height: 1.4; color: #374151; font-family: inherit;">${latestNews.text}</div>
+								<div style="font-size: 11px; line-height: 1.4; color: #374151; font-family: inherit;">${latestNews.text.replace(/\n/g, '<br>')}</div>
 							`;
 							
 							container.prepend(customNode);
