@@ -1,3 +1,39 @@
+// archive/projectFilter.js
+// Standalone Project Filter & Pinned Projects Module
+
+// Ensure state object exists
+window.archiveState = window.archiveState || {};
+if (!window.archiveState.pinnedProjects) {
+	window.archiveState.pinnedProjects = new Set();
+}
+if (window.archiveState.archiveShowPinnedOnly === undefined) {
+	window.archiveState.archiveShowPinnedOnly = false;
+}
+
+// Ensure default tree caching is enabled
+if (!document.documentElement.dataset.delpropCacheEnabled) {
+	document.documentElement.dataset.delpropCacheEnabled = 'true';
+}
+
+// Load storage settings for pinned projects
+chrome.storage.local.get(['pinnedProjects', 'archiveShowPinnedOnly'], (data) => {
+	if (data.pinnedProjects) {
+		window.archiveState.pinnedProjects = new Set(data.pinnedProjects);
+	}
+	if (data.archiveShowPinnedOnly !== undefined) {
+		window.archiveState.archiveShowPinnedOnly = data.archiveShowPinnedOnly === true || data.archiveShowPinnedOnly === 'true';
+	}
+});
+
+// Self-inject archive/patch.js into page context if not already injected
+if (!document.documentElement.dataset.delpropPatchInjected) {
+	document.documentElement.dataset.delpropPatchInjected = 'true';
+	const patchScript = document.createElement('script');
+	patchScript.src = chrome.runtime.getURL('archive/patch.js');
+	patchScript.onload = function () { this.remove(); };
+	(document.head || document.documentElement).appendChild(patchScript);
+}
+
 window.getProjectSpan = function(row) {
 	const directTable = row.querySelector(':scope > td > table');
 	if (!directTable) return null;
@@ -249,3 +285,32 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		document.dispatchEvent(new CustomEvent("delPropTrigger", { detail: { action: "clearTreeCache" } }));
 	}
 });
+
+// Auto-detect DHTMLX tree container and initialize filter
+function autoInitFilter() {
+	const treeContainer = document.querySelector('.dhxtree_dhx_skyblue');
+	if (treeContainer) {
+		window.initProjectFilter(treeContainer);
+	}
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', autoInitFilter);
+} else {
+	autoInitFilter();
+}
+
+const bodyObserver = new MutationObserver(() => {
+	const treeContainer = document.querySelector('.dhxtree_dhx_skyblue');
+	if (treeContainer && !treeContainer.querySelector('.delprop-search-container')) {
+		window.initProjectFilter(treeContainer);
+	}
+});
+
+if (document.body) {
+	bodyObserver.observe(document.body, { childList: true, subtree: true });
+} else {
+	document.addEventListener('DOMContentLoaded', () => {
+		bodyObserver.observe(document.body, { childList: true, subtree: true });
+	});
+}
