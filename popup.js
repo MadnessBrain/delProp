@@ -473,9 +473,20 @@ function formatMinutes(totalMin) {
 }
 
 function renderCompTime() {
-	chrome.storage.local.get(['overtimeDays', 'carryOverMinutes'], (data) => {
+	chrome.storage.local.get(['overtimeDays', 'carryOverMinutes', 'compGoalHours'], (data) => {
 		const overtimeDays = data.overtimeDays || {};
 		const carryOverMinutes = data.carryOverMinutes || 0;
+		const compGoalHours = data.compGoalHours || 0;
+
+		const goalInput = document.getElementById('comp-goal-input');
+		if (goalInput && !goalInput.dataset.listenerAdded) {
+			goalInput.value = compGoalHours || '';
+			goalInput.addEventListener('input', (e) => {
+				const val = parseFloat(e.target.value) || 0;
+				chrome.storage.local.set({ compGoalHours: val }, renderCompTime);
+			});
+			goalInput.dataset.listenerAdded = 'true';
+		}
 		
 		// Sort days in descending order
 		const sortedKeys = Object.keys(overtimeDays).sort((a, b) => b.localeCompare(a));
@@ -596,9 +607,28 @@ function renderCompTime() {
 			}
 			
 			// Update summary cards
+			const grandTotalMin = totalMinutes + carryOverMinutes;
 			document.getElementById('comp-carryover').textContent = formatMinutes(carryOverMinutes);
-			document.getElementById('comp-total').textContent = formatMinutes(totalMinutes + carryOverMinutes);
+			document.getElementById('comp-total').textContent = formatMinutes(grandTotalMin);
 			document.getElementById('comp-month').textContent = formatMinutes(thisMonthMinutes);
+
+			const goalStatusEl = document.getElementById('comp-goal-status');
+			if (goalStatusEl) {
+				const goalVal = parseFloat(goalInput?.value) || 0;
+				if (goalVal > 0) {
+					const goalMin = goalVal * 60;
+					const remainingMin = goalMin - grandTotalMin;
+					if (remainingMin <= 0) {
+						goalStatusEl.style.color = '#10b981';
+						goalStatusEl.textContent = `🎉 Цель (${goalVal}ч) достигнута!`;
+					} else {
+						goalStatusEl.style.color = 'var(--accent)';
+						goalStatusEl.textContent = `Осталось до цели: ${formatMinutes(remainingMin)}`;
+					}
+				} else {
+					goalStatusEl.textContent = '';
+				}
+			}
 		};
 		
 		drawTable();

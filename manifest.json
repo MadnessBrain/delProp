@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "delProp",
   "description": "Улучшайзер",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "author": "R&L",
   "content_scripts": [
     {

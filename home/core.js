@@ -19,12 +19,19 @@ window.delProp.helpers = {
 		return window.delProp.timeHelpers.parseTimeToMinutes(timeStr);
 	},
 	formatLateness(min) {
-		const h = Math.floor(min / 60);
-		const m = min % 60;
-		return h > 0 ? `${h}ч ${m}м` : `${m}м`;
+		return window.delProp.timeHelpers.formatMinutes(min);
+	},
+	formatMinutes(totalMin) {
+		return window.delProp.timeHelpers.formatMinutes(totalMin);
 	},
 	getPerDay(start, end) {
 		return window.delProp.timeHelpers.getPerDay(start, end);
+	},
+	calculateEndWorkTime(startStr, endStr, endFStr, userInput, dayOfWeek) {
+		return window.delProp.timeHelpers.calculateEndWorkTime(startStr, endStr, endFStr, userInput, dayOfWeek);
+	},
+	getOvertimeStatus(nowMs, endWorkMs, maxOvertimeStr) {
+		return window.delProp.timeHelpers.getOvertimeStatus(nowMs, endWorkMs, maxOvertimeStr);
 	}
 };
 

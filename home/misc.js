@@ -216,20 +216,27 @@
 				const dateObj = new Date(parts[2], parts[1] - 1, parts[0]);
 				const dayOfWeek = dateObj.getDay();
 
-				if (dayOfWeek === 0 || dayOfWeek === 6) return; // Skip weekends
+				if (dayOfWeek === 0) return; // Skip Sunday
 
-				// Calculate end of work day with lateness adjustments
-				let targetEndMin = (dayOfWeek === 5) ? endFMin : endMin;
-				let latenessMin = loginMin - startMin;
-
-				if (latenessMin > 0 && latenessMin <= 30) {
-					targetEndMin += latenessMin;
-				}
-
-				// Calculate overtime minutes capped at 19:00 (1140 minutes)
 				const maxLogoutMin = 19 * 60;
 				const effectiveLogoutMin = Math.min(logoutMin, maxLogoutMin);
-				const overtimeMin = effectiveLogoutMin - targetEndMin;
+				let overtimeMin = 0;
+				let targetEndMin = 0;
+
+				if (dayOfWeek === 6) {
+					// Saturday: all worked time up to 19:00 counts as overtime
+					targetEndMin = loginMin;
+					overtimeMin = Math.max(0, effectiveLogoutMin - loginMin);
+				} else {
+					// Weekday: Calculate end of work day with lateness adjustments
+					targetEndMin = (dayOfWeek === 5) ? endFMin : endMin;
+					let latenessMin = loginMin - startMin;
+
+					if (latenessMin > 0 && latenessMin <= 30) {
+						targetEndMin += latenessMin;
+					}
+					overtimeMin = effectiveLogoutMin - targetEndMin;
+				}
 
 				if (overtimeMin > 0) {
 					if (!overtimeDays[storageKey] || overtimeDays[storageKey].minutes !== overtimeMin) {

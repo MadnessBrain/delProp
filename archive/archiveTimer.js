@@ -25,41 +25,36 @@
 		parent.appendChild(timerDiv);
 
 		const helpers = window.delProp.timeHelpers;
-		const start = workTimerField.startDay || '07:00';
-		let latenessMin = 0;
-		if (userInput) {
-			const startMin = helpers.parseTimeToMinutes(start);
-			const loginMin = helpers.parseTimeToMinutes(userInput);
-			if (startMin !== null && loginMin !== null && loginMin > startMin) {
-				latenessMin = loginMin - startMin;
-			}
-		}
+		const dayOfWeek = new Date().getDay();
 
-		const endDay = (new Date().getDay() !== 5 ? (workTimerField.endDay || '16:00') : (workTimerField.endDayF || '14:45'));
-
-		let exitTime = endDay;
-		if (latenessMin > 0 && latenessMin <= 30) {
-			const endMin = helpers.parseTimeToMinutes(endDay);
-			if (endMin !== null) {
-				const finalMin = endMin + latenessMin;
-				const fh = String(Math.floor(finalMin / 60)).padStart(2, '0');
-				const fm = String(finalMin % 60).padStart(2, '0');
-				exitTime = `${fh}:${fm}`;
-			}
-		}
-
-		const startWork = helpers.timeNorm(start);
-		const endWork = helpers.timeNorm(endDay);
+		const { exitTimeStr, startWorkMs, endWorkMs } = helpers.calculateEndWorkTime(
+			workTimerField.startDay || '07:00',
+			workTimerField.endDay || '16:00',
+			workTimerField.endDayF || '14:45',
+			userInput,
+			dayOfWeek
+		);
 
 		function update() {
-			if (new Date().getDay() === 6 || new Date().getDay() === 0) {
-				timerDiv.innerHTML = `На выход: <strong>${exitTime}</strong> (100%)`;
+			const now = Date.now();
+			if (dayOfWeek === 6 || dayOfWeek === 0) {
+				timerDiv.innerHTML = `На выход: <strong>${exitTimeStr}</strong> (100%)`;
 				return;
 			}
-			const { percent, delay } = helpers.getPerDay(startWork, endWork + (latenessMin <= 30 ? latenessMin * 60 * 1000 : 0));
-			timerDiv.innerHTML = `На выход: <strong>${exitTime}</strong> (${percent}%)`;
-			if (percent < 100) {
+
+			if (now < endWorkMs) {
+				const { percent, delay } = helpers.getPerDay(startWorkMs, endWorkMs);
+				timerDiv.innerHTML = `На выход: <strong>${exitTimeStr}</strong> (${percent}%)`;
 				setTimeout(update, delay);
+			} else {
+				const otStatus = helpers.getOvertimeStatus(now, endWorkMs, '19:00');
+				if (otStatus.isOvertime) {
+					const formattedOt = helpers.formatMinutes(otStatus.overtimeMinutes);
+					timerDiv.innerHTML = `Идет переработка: <strong style="color: #2563eb;">+${formattedOt}</strong> (до 19:00)`;
+					setTimeout(update, 30000);
+				} else {
+					timerDiv.innerHTML = `Переработка завершена <strong style="color: #059669;">(19:00)</strong>`;
+				}
 			}
 		}
 		update();

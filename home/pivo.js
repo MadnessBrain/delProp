@@ -365,6 +365,14 @@
 					tapText(msg.work);
 					timer(endWork).then(notificator);
 				}
+			} else {
+				const maxOvertime = window.delProp.helpers.timeNorm('19:00');
+				if (now < maxOvertime) {
+					tapText('Идет переработка');
+					timer(maxOvertime).then(notificator);
+				} else {
+					notifications(finishMsg);
+				}
 			}
 		}
 
