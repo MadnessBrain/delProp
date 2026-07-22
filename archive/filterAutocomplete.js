@@ -8,6 +8,13 @@
 	let items = [];
 	let searchInput = null;
 	let isMouseInDropdown = false;
+	let suppressAutocomplete = false;
+
+	// Hint code to display text mapping (keeps Cyrillic out of patch.js for obfuscation safety)
+	const HINT_TEXTS = {
+		'HINT_EXPAND_PROJECT': '💡 Раскройте проект для подсказок',
+		'HINT_EXPAND_GROUP': '💡 Раскройте группу для подсказок'
+	};
 
 	function createDropdown(inputEl) {
 		dropdown = document.createElement('div');
@@ -46,7 +53,8 @@
 			div.className = 'delprop-autocomplete-item';
 			if (item.hint) {
 				div.classList.add('delprop-autocomplete-hint');
-				div.textContent = item.text;
+				// Decode hint codes to readable Cyrillic text
+				div.textContent = HINT_TEXTS[item.text] || item.text;
 			} else {
 				// Highlight matching part
 				const query = searchInput.value.trim().toLowerCase();
@@ -108,11 +116,14 @@
 
 	function selectItem(item) {
 		if (!searchInput) return;
+		suppressAutocomplete = true;
 		searchInput.value = item.fullPath;
 		hideDropdown();
 		window.resetFilterHistoryIndex();
 		searchInput.dispatchEvent(new Event('input'));
 		searchInput.focus();
+		// Reset suppression after the input event has been processed
+		setTimeout(() => { suppressAutocomplete = false; }, 0);
 	}
 
 	function requestSuggestions(query) {
@@ -121,6 +132,13 @@
 		}));
 	}
 
+	// Allow external modules (e.g. filterHistory) to suppress autocomplete temporarily
+	window.suppressAutocomplete = function() {
+		suppressAutocomplete = true;
+		hideDropdown();
+		setTimeout(() => { suppressAutocomplete = false; }, 0);
+	};
+
 	window.initFilterAutocomplete = function(inputEl) {
 		searchInput = inputEl;
 		createDropdown(inputEl);
@@ -128,12 +146,14 @@
 		// Listen for suggestions from patch.js
 		document.addEventListener("delPropResponse", (e) => {
 			if (e.detail.action === "autocompleteSuggestions") {
+				if (suppressAutocomplete) return; // Don't show during history navigation
 				showDropdown(e.detail.suggestions || []);
 			}
 		});
 
 		// Request suggestions on input
 		inputEl.addEventListener('input', () => {
+			if (suppressAutocomplete) return;
 			const val = inputEl.value.trim();
 			if (val.length > 0) {
 				requestSuggestions(val);

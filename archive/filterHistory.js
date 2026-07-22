@@ -28,6 +28,9 @@
 				}
 				if (historyIndex < history.length - 1) {
 					historyIndex++;
+					if (typeof window.suppressAutocomplete === 'function') {
+						window.suppressAutocomplete();
+					}
 					searchInput.value = history[history.length - 1 - historyIndex];
 					searchInput.dispatchEvent(new Event('input'));
 				}
@@ -35,10 +38,16 @@
 				e.preventDefault();
 				if (historyIndex > 0) {
 					historyIndex--;
+					if (typeof window.suppressAutocomplete === 'function') {
+						window.suppressAutocomplete();
+					}
 					searchInput.value = history[history.length - 1 - historyIndex];
 					searchInput.dispatchEvent(new Event('input'));
 				} else if (historyIndex === 0) {
 					historyIndex = -1;
+					if (typeof window.suppressAutocomplete === 'function') {
+						window.suppressAutocomplete();
+					}
 					searchInput.value = currentUnsaved;
 					searchInput.dispatchEvent(new Event('input'));
 				}

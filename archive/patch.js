@@ -212,7 +212,7 @@ document.addEventListener("delPropTrigger", (e) => {
 					}
 				} else {
 					suggestions.push({
-						text: '💡 Раскройте проект для подсказок',
+						text: 'HINT_EXPAND_PROJECT',
 						hint: true
 					});
 				}
@@ -255,7 +255,7 @@ document.addEventListener("delPropTrigger", (e) => {
 						}
 					} else {
 						suggestions.push({
-							text: '💡 Раскройте группу для подсказок',
+							text: 'HINT_EXPAND_GROUP',
 							hint: true
 						});
 					}
