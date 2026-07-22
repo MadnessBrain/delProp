@@ -5,7 +5,19 @@ const { execSync } = require('child_process');
 const distDir = path.join(__dirname, 'dist');
 const archiveDest = path.join(distDir, 'archive');
 
-console.log("=== Building Minimal Archive Version ===");
+const BUILD_SECRET = "awsomeYaroslavchik@0@^";
+
+// Compute numeric starting hash seed from secret
+let secretHash = 5381;
+for (let i = 0; i < BUILD_SECRET.length; i++) {
+	secretHash = (secretHash * 33) ^ BUILD_SECRET.charCodeAt(i);
+}
+const SECRET_SEED = (secretHash >>> 0);
+
+// Compute XOR key array from secret
+const SECRET_XOR_KEYS = Array.from(BUILD_SECRET).map(c => c.charCodeAt(0));
+
+console.log("=== Building Minimal Archive Version (Secret Protected) ===");
 
 // Clear dist/archive directory
 if (fs.existsSync(archiveDest)) {
@@ -13,17 +25,18 @@ if (fs.existsSync(archiveDest)) {
 }
 fs.mkdirSync(archiveDest, { recursive: true });
 
-// Obfuscator function that encodes string literals to base64 to hide them from human view,
-// while complying with Manifest V3 CSP (no eval() or new Function() at runtime).
+// Salted Obfuscator function using XOR keys derived from BUILD_SECRET
 function obfuscateJS(code) {
 	if (!code.trim()) return code;
 
 	const helperName = '_0x' + Math.random().toString(36).substring(2, 8);
-	const helperFn = `function ${helperName}(s){return decodeURIComponent(escape(atob(s)));}\n`;
+	const keysJson = JSON.stringify(SECRET_XOR_KEYS);
+	
+	const helperFn = `function ${helperName}(s){var k=${keysJson};var b=atob(s);var r='';for(var i=0;i<b.length;i++){r+=String.fromCharCode(b.charCodeAt(i)^k[i%k.length]);}return decodeURIComponent(escape(r));}\n`;
 	
 	const stringRegex = /(["'])(?:(?=(\\?))\2.)*?\1/g;
-	
 	let hasReplaced = false;
+
 	const obfuscated = code.replace(stringRegex, (match, quote, escape, offset) => {
 		const rawString = match.slice(1, -1);
 		if (rawString.length === 0) return match;
@@ -36,7 +49,12 @@ function obfuscateJS(code) {
 
 		try {
 			const rawVal = new Function(`return ${match}`)();
-			const encoded = Buffer.from(rawVal, 'utf8').toString('base64');
+			const utf8Bytes = Buffer.from(rawVal, 'utf8');
+			const xored = Buffer.alloc(utf8Bytes.length);
+			for (let i = 0; i < utf8Bytes.length; i++) {
+				xored[i] = utf8Bytes[i] ^ SECRET_XOR_KEYS[i % SECRET_XOR_KEYS.length];
+			}
+			const encoded = xored.toString('base64');
 			hasReplaced = true;
 			return `${helperName}('${encoded}')`;
 		} catch (e) {
@@ -47,14 +65,14 @@ function obfuscateJS(code) {
 	return hasReplaced ? (helperFn + obfuscated) : code;
 }
 
-// Helper to compile/minify, obfuscate and check integrity of a JS file
+// Helper to compile/minify, obfuscate and check integrity of a JS file using SECRET_SEED
 function processJS(srcPath, destPath, relativeDest, addIntegrityCheck = false) {
 	console.log(`Processing JS: ${srcPath}`);
 	const tempDest = destPath + '.tmp.js';
 	
 	fs.mkdirSync(path.dirname(destPath), { recursive: true });
 	
-	// Minify first using esbuild (removes comments, whitespace, minifies syntax)
+	// Minify first using esbuild
 	execSync(`npx -y esbuild "${srcPath}" --minify --outfile="${tempDest}"`, { stdio: 'inherit' });
 	
 	const minifiedCode = fs.readFileSync(tempDest, 'utf8');
@@ -78,8 +96,8 @@ function processJS(srcPath, destPath, relativeDest, addIntegrityCheck = false) {
 				const before = txt.substring(0, idx + marker.length);
 				const after = txt.substring(idx + marker.length + 32);
 				const clean = before + ' '.repeat(32) + after;
-				const cleanForHash = clean.replace(/\r/g, '').replace(/\n/g, '');
-				let h = 5381;
+				const cleanForHash = clean.replace(/\\r/g, '').replace(/\\n/g, '');
+				let h = ${SECRET_SEED};
 				for (let i = 0; i < cleanForHash.length; i++) {
 					h = (h * 33) ^ cleanForHash.charCodeAt(i);
 				}
@@ -106,7 +124,7 @@ function processJS(srcPath, destPath, relativeDest, addIntegrityCheck = false) {
 		const cleanCombined = before + ' '.repeat(32) + after;
 		const cleanCombinedForHash = cleanCombined.replace(/\r/g, '').replace(/\n/g, '');
 		
-		let h = 5381;
+		let h = SECRET_SEED;
 		for (let i = 0; i < cleanCombinedForHash.length; i++) {
 			h = (h * 33) ^ cleanCombinedForHash.charCodeAt(i);
 		}
