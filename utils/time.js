@@ -97,5 +97,39 @@ window.delProp.timeHelpers = {
 			overtimeMinutes,
 			maxOvertimeMs
 		};
+	},
+
+	// Unified workday bounds: start/end timestamps adjusted for Friday and lateness (<=30 min shifts end)
+	getWorkDayBounds(startStr = '07:00', endStr = '16:00', endFStr = '14:45', userInput = null, dayOfWeek = new Date().getDay()) {
+		const start = startStr || '07:00';
+		const end = endStr || '16:00';
+		const endF = endFStr || '14:45';
+
+		let startWork = this.timeNorm(start);
+		let endWork = this.timeNorm(dayOfWeek === 5 ? endF : end);
+
+		if (endWork <= startWork) {
+			endWork += 24 * 60 * 60 * 1000;
+		}
+
+		let latenessMin = 0;
+		if (userInput) {
+			const startMin = this.parseTimeToMinutes(start);
+			const loginMin = this.parseTimeToMinutes(userInput);
+			if (startMin !== null && loginMin !== null && loginMin > startMin) {
+				latenessMin = loginMin - startMin;
+				if (latenessMin <= 30) {
+					endWork += latenessMin * 60 * 1000;
+				}
+			}
+		}
+
+		// Exit time as a normalized HH:MM string (no "14:75" style overflow)
+		const appliedLateness = latenessMin <= 30 ? latenessMin : 0;
+		const baseEndMin = this.parseTimeToMinutes(dayOfWeek === 5 ? endF : end) || 0;
+		const exitTotalMin = baseEndMin + appliedLateness;
+		const exitTimeStr = `${String(Math.floor(exitTotalMin / 60) % 24).padStart(2, '0')}:${String(exitTotalMin % 60).padStart(2, '0')}`;
+
+		return { startWork, endWork, latenessMin, exitTimeStr };
 	}
 };

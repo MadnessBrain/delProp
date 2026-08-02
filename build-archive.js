@@ -17,6 +17,16 @@ const SECRET_SEED = (secretHash >>> 0);
 // Compute XOR key array from secret
 const SECRET_XOR_KEYS = Array.from(BUILD_SECRET).map(c => c.charCodeAt(0));
 
+// Deterministic helper name per file (stable, reproducible builds)
+function helperNameFor(relPath) {
+	let h = SECRET_SEED;
+	const s = 'delprop:' + relPath;
+	for (let i = 0; i < s.length; i++) {
+		h = (h * 33) ^ s.charCodeAt(i);
+	}
+	return '_0x' + (h >>> 0).toString(36);
+}
+
 console.log("=== Building Minimal Archive Version (Secret Protected) ===");
 
 // Clear dist/archive directory
@@ -26,10 +36,9 @@ if (fs.existsSync(archiveDest)) {
 fs.mkdirSync(archiveDest, { recursive: true });
 
 // Salted Obfuscator function using XOR keys derived from BUILD_SECRET
-function obfuscateJS(code) {
+function obfuscateJS(code, helperName) {
 	if (!code.trim()) return code;
 
-	const helperName = '_0x' + Math.random().toString(36).substring(2, 8);
 	const keysJson = JSON.stringify(SECRET_XOR_KEYS);
 	
 	const helperFn = `function ${helperName}(s){var k=${keysJson};var b=atob(s);var r='';for(var i=0;i<b.length;i++){r+=String.fromCharCode(b.charCodeAt(i)^k[i%k.length]);}return decodeURIComponent(escape(r));}\n`;
@@ -76,7 +85,7 @@ function processJS(srcPath, destPath, relativeDest, addIntegrityCheck = false) {
 	execSync(`npx -y esbuild "${srcPath}" --minify --outfile="${tempDest}"`, { stdio: 'inherit' });
 	
 	const minifiedCode = fs.readFileSync(tempDest, 'utf8');
-	let finalCode = obfuscateJS(minifiedCode);
+	let finalCode = obfuscateJS(minifiedCode, helperNameFor(relativeDest));
 	
 	if (addIntegrityCheck) {
 		const checkCode = `
@@ -242,7 +251,10 @@ const archiveManifest = {
 	web_accessible_resources: [
 		{
 			resources: [
-				"archive/patch.js"
+				"archive/patch.js",
+				"archive/filterHistory.js",
+				"archive/filterAutocomplete.js",
+				"archive/projectFilter.js"
 			],
 			matches: [
 				"http://archive.vympel/*"

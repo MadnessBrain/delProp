@@ -4,23 +4,15 @@
 	async function addHeaderBar(workTimerField, user) {
 		if (document.getElementById('delprop-header-bar')) return;
 
-		const start = workTimerField.startDay || '07:00';
 		const loginTime = window.delProp.user_input;
 		const fio = user?.fio || 'Пользователь';
 
-		// Calculate lateness
-		let latenessMin = 0;
-		if (loginTime) {
-			const startMin = window.delProp.helpers.parseTimeToMinutes(start);
-			const loginMin = window.delProp.helpers.parseTimeToMinutes(loginTime);
-			if (startMin !== null && loginMin !== null && loginMin > startMin) {
-				latenessMin = loginMin - startMin;
-			}
-		}
-
-		const endDay = (new Date().getDay() !== 5 ? workTimerField.endDay : workTimerField.endDayF);
-		const [h, min] = endDay.split(':');
-		const exitTime = latenessMin <= 30 ? [h, +min + latenessMin].join(':') : endDay;
+		const { latenessMin, exitTimeStr: exitTime } = window.delProp.helpers.getWorkDayBounds(
+			workTimerField.startDay,
+			workTimerField.endDay,
+			workTimerField.endDayF,
+			loginTime
+		);
 
 		const headerBar = document.createElement('div');
 		headerBar.id = 'delprop-header-bar';
@@ -94,39 +86,20 @@
 		const progressText = document.getElementById('header-progress-text');
 		if (!progressBar || !progressText) return;
 
-		const start = workTimerField.startDay || '07:00';
-		const end = workTimerField.endDay || '16:00';
-		const endF = workTimerField.endDayF || '14:45';
-
-		let startWork = window.delProp.helpers.timeNorm(start);
-		let endWork = window.delProp.helpers.timeNorm(end);
-
-		if (new Date().getDay() === 5) {
-			endWork = window.delProp.helpers.timeNorm(endF);
-		}
-
-		if (endWork <= startWork) {
-			endWork += 24 * 60 * 60 * 1000;
-		}
-
-		// Calculate lateness and shift endWork if lateness <= 30 min
-		let latenessMin = 0;
-		if (window.delProp.user_input) {
-			const startMin = window.delProp.helpers.parseTimeToMinutes(start);
-			const loginMin = window.delProp.helpers.parseTimeToMinutes(window.delProp.user_input);
-			if (startMin !== null && loginMin !== null && loginMin > startMin) {
-				latenessMin = loginMin - startMin;
-				if (latenessMin > 0 && latenessMin <= 30) {
-					endWork += latenessMin * 60 * 1000;
-				}
-			}
-		}
-
-		if (new Date().getDay() === 6 || new Date().getDay() === 0) {
+		const dayOfWeek = new Date().getDay();
+		if (dayOfWeek === 6 || dayOfWeek === 0) {
 			progressBar.style.width = '100%';
 			progressText.textContent = '100%';
 			return;
 		}
+
+		const { startWork, endWork } = window.delProp.helpers.getWorkDayBounds(
+			workTimerField.startDay,
+			workTimerField.endDay,
+			workTimerField.endDayF,
+			window.delProp.user_input,
+			dayOfWeek
+		);
 
 		function update() {
 			const { percent, delay } = window.delProp.helpers.getPerDay(startWork, endWork);

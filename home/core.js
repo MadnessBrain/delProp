@@ -30,6 +30,9 @@ window.delProp.helpers = {
 	calculateEndWorkTime(startStr, endStr, endFStr, userInput, dayOfWeek) {
 		return window.delProp.timeHelpers.calculateEndWorkTime(startStr, endStr, endFStr, userInput, dayOfWeek);
 	},
+	getWorkDayBounds(startStr, endStr, endFStr, userInput, dayOfWeek) {
+		return window.delProp.timeHelpers.getWorkDayBounds(startStr, endStr, endFStr, userInput, dayOfWeek);
+	},
 	getOvertimeStatus(nowMs, endWorkMs, maxOvertimeStr) {
 		return window.delProp.timeHelpers.getOvertimeStatus(nowMs, endWorkMs, maxOvertimeStr);
 	}

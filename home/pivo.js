@@ -246,33 +246,14 @@
 		};
 		const finishMsg = finishMsgs[theme] || finishMsgs.beer;
 
-		const start = workTimerField.startDay || '07:00';
-		const end = workTimerField.endDay || '16:00';
-		const endF = workTimerField.endDayF || '14:45';
-
-		let startWork = window.delProp.helpers.timeNorm(start);
-		let endWork = window.delProp.helpers.timeNorm(end);
-
-		if (new Date().getDay() === 5) {
-			endWork = window.delProp.helpers.timeNorm(endF);
-		}
-
-		if (endWork <= startWork) {
-			endWork += 24 * 60 * 60 * 1000;
-		}
-
-		// Calculate lateness and shift endWork if lateness <= 30 min
-		let latenessMin = 0;
-		if (window.delProp.user_input) {
-			const startMin = window.delProp.helpers.parseTimeToMinutes(start);
-			const loginMin = window.delProp.helpers.parseTimeToMinutes(window.delProp.user_input);
-			if (startMin !== null && loginMin !== null && loginMin > startMin) {
-				latenessMin = loginMin - startMin;
-				if (latenessMin > 0 && latenessMin <= 30) {
-					endWork += latenessMin * 60 * 1000;
-				}
-			}
-		}
+		const bounds = window.delProp.helpers.getWorkDayBounds(
+			workTimerField.startDay,
+			workTimerField.endDay,
+			workTimerField.endDayF,
+			window.delProp.user_input,
+			new Date().getDay()
+		);
+		let { startWork, endWork } = bounds;
 
 		if (new Date().getDay() === 6) {
 			wrapper.style.height = '100%';

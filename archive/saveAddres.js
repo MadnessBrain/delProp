@@ -22,6 +22,8 @@ chrome.storage.local.get(['formFields', 'archiveHashes', 'pinnedProjects', 'arch
 	window.archiveState.archiveHashes = data.archiveHashes || {};
 	window.archiveState.pinnedProjects = new Set(data.pinnedProjects || []);
 	window.archiveState.archiveShowPinnedOnly = data.archiveShowPinnedOnly === true || data.archiveShowPinnedOnly === 'true';
+	window.archiveState.workTimerField = data.formFields?.workTimerField || { startDay: '07:00', endDay: '16:00', endDayF: '14:45' };
+	window.archiveState.userInput = data.user_input;
 
 	if (window.archiveState.archiveSettings.enabled !== 'true') {
 		console.log("delProp: Archive enhancements are disabled.");
@@ -124,7 +126,9 @@ const docObserver = new MutationObserver(mutations => {
 });
 
 const mainObserver = new MutationObserver(mutations => {
-	window.initArchiveTimer();
+	if (!document.getElementById('delprop-archive-timer')) {
+		window.initArchiveTimer(window.archiveState.workTimerField, window.archiveState.userInput);
+	}
 	const mutationsCount = mutations.length;
 	for (let i = 0; i < mutationsCount; i++) {
 		const mutation = mutations[i];

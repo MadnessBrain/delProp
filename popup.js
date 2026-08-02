@@ -9,11 +9,68 @@ const dellNewsField = form.elements.dellNews,
 	archiveField = form.elements.archive,
 	toHide = ['btns', 'styled', 'colorized', 'enabled']
 
+// Shared time helpers (mirrors utils/time.js for popup context)
 function parseTimeToMinutes(timeStr) {
 	if (!timeStr || typeof timeStr !== 'string') return null;
 	const parts = timeStr.split(':').map(Number);
 	if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
 	return parts[0] * 60 + parts[1];
+}
+
+function formatMinutes(totalMin) {
+	if (totalMin === null || totalMin === undefined || isNaN(totalMin)) return '0ч 0м';
+	const isNeg = totalMin < 0;
+	const absMin = Math.abs(totalMin);
+	const h = Math.floor(absMin / 60);
+	const m = absMin % 60;
+	return `${isNeg ? '-' : ''}${h}ч ${m}м`;
+}
+
+// Source of truth for default settings - keep in sync with utils/settings.js
+function getDefaultSettings() {
+	return {
+		changeField: {
+			btns: 'false',
+			btns_style: 'normal',
+			btnName: []
+		},
+		dellNewsField: {
+			news: 'false',
+			newsList: []
+		},
+		styleField: {
+			styled: 'false',
+			filter: 'none',
+			rndImg: 'off',
+			semen: 'off',
+			snow: 'off',
+			colorized: 'false',
+			colorTheme: {
+				mainColor: '#b5deff',
+				mainColorHover: '#e2efff'
+			}
+		},
+		workTimerField: {
+			timer: 'false',
+			headerEnabled: 'false',
+			overtimeToComp: 'false',
+			userIcon: '👤',
+			timerTheme: 'beer',
+			startDay: '07:00',
+			endDay: '16:00',
+			endDayF: '14:45'
+		},
+		mainUserField: {
+			isAdmin: 'false'
+		},
+		archiveField: {
+			enabled: 'true',
+			saveTabs: 'true',
+			syncDocName: 'true',
+			projectFilter: 'true',
+			treeCacheEnabled: 'true'
+		}
+	};
 }
 
 chrome.storage.local.get(['user', 'user_input', 'formFields'], ({user, user_input, formFields})=>{
@@ -23,24 +80,19 @@ chrome.storage.local.get(['user', 'user_input', 'formFields'], ({user, user_inpu
 	const userNameEl = document.querySelector('.user-name')
 	if (userNameEl) {
 		userNameEl.textContent = name;
-		
+
 		if (user_input && formFields?.workTimerField) {
 			const startDay = formFields.workTimerField.startDay || '07:00';
 			const startMin = parseTimeToMinutes(startDay);
 			const loginMin = parseTimeToMinutes(user_input);
 			if (startMin !== null && loginMin !== null && loginMin > startMin) {
 				const latenessMin = loginMin - startMin;
-				const formatLateness = (min) => {
-					const h = Math.floor(min / 60);
-					const m = min % 60;
-					return h > 0 ? `${h}ч ${m}м` : `${m}м`;
-				};
 				const span = document.createElement('span');
 				span.style.color = '#ff4a4a';
 				span.style.fontWeight = 'bold';
 				span.style.marginLeft = '6px';
 				span.style.fontSize = '12px';
-				span.textContent = `(+${formatLateness(latenessMin)})`;
+				span.textContent = `(+${formatMinutes(latenessMin)})`;
 				userNameEl.appendChild(span);
 			}
 		}
@@ -246,38 +298,8 @@ function removeArray(obj){
 
 function restoreSettings() {
 	chrome.storage.local.get('formFields', function({formFields}) {
-
 		if (!formFields) {
-			formFields = {
-				changeField: {
-					btns: 'false',
-				},
-				dellNewsField: {
-					news: 'false'
-				},
-				styleField: {
-					styled: 'false',
-					colorized: "false"
-				},
-				workTimerField: {
-					timer: 'false',
-					headerEnabled: 'false',
-					overtimeToComp: 'false',
-					userIcon: '👤',
-					timerTheme: 'beer'
-				},
-				mainUserField: {
-					isAdmin: 'false'
-				},
-				archiveField: {
-					enabled: 'true',
-					saveTabs: 'true',
-					syncDocName: 'true',
-					projectFilter: 'true',
-					treeCacheEnabled: 'true'
-				}
-			}
-
+			formFields = getDefaultSettings();
 			chrome.storage.local.set({formFields}, function(){})
 		}
 
@@ -359,36 +381,7 @@ form.save.addEventListener('click', (e)=>{
 
 form.restore.addEventListener('click', (e)=>{
 	e.preventDefault()
-	const defaultFields = {
-		changeField: {
-			btns: 'false',
-		},
-		dellNewsField: {
-			news: 'false'
-		},
-		styleField: {
-			styled: 'false',
-			colorized: "false"
-		},
-		workTimerField: {
-			timer: 'false',
-			headerEnabled: 'false',
-			overtimeToComp: 'false',
-			userIcon: '👤',
-			timerTheme: 'beer'
-		},
-		mainUserField: {
-			isAdmin: 'false'
-		},
-		archiveField: {
-			enabled: 'true',
-			saveTabs: 'true',
-			syncDocName: 'true',
-			projectFilter: 'true',
-			treeCacheEnabled: 'true'
-		}
-	}
-	chrome.storage.local.set({formFields: defaultFields}, () => {
+	chrome.storage.local.set({formFields: getDefaultSettings()}, () => {
 		chrome.storage.local.remove(['newsId'], () => {
 			initEmojiGrid();
 			reloadActiveTab();
@@ -465,12 +458,6 @@ if (clearTreeCacheBtn) {
 // Overtime / Comp Time logic
 const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
 const dayNames = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
-
-function formatMinutes(totalMin) {
-	const h = Math.floor(totalMin / 60);
-	const m = totalMin % 60;
-	return `${h}ч ${m}м`;
-}
 
 function renderCompTime() {
 	chrome.storage.local.get(['overtimeDays', 'carryOverMinutes', 'compGoalHours'], (data) => {
