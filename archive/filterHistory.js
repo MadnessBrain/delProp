@@ -9,9 +9,14 @@
 	let currentUnsaved = '';
 
 	window.initFilterHistory = function(searchInput) {
-		chrome.storage.local.get(['archiveFilterHistory'], (data) => {
-			history = data.archiveFilterHistory || [];
-		});
+		try {
+			chrome.storage.local.get(['archiveFilterHistory'], (data) => {
+				history = data.archiveFilterHistory || [];
+			});
+		} catch (e) {
+			console.warn('delProp: extension context invalidated, using empty history');
+			history = [];
+		}
 
 		searchInput.addEventListener('keydown', (e) => {
 			// Only handle history navigation when autocomplete dropdown is NOT visible
@@ -71,8 +76,14 @@
 		}
 		historyIndex = -1;
 		currentUnsaved = '';
-		chrome.storage.local.set({ archiveFilterHistory: history });
-	};
+
+			// Save to storage
+			try {
+				chrome.storage.local.set({ archiveFilterHistory: history });
+			} catch (e) {
+				console.warn('delProp: extension context invalidated, history not persisted');
+			}
+		};
 
 	window.resetFilterHistoryIndex = function() {
 		historyIndex = -1;

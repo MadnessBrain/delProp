@@ -477,12 +477,13 @@ function renderCompTime() {
 		
 		// Sort days in descending order
 		const sortedKeys = Object.keys(overtimeDays).sort((a, b) => b.localeCompare(a));
-		
+
 		// Populate month filter dropdown
 		const filterDropdown = document.getElementById('comp-month-filter');
 		const currentSelected = filterDropdown.value || 'all';
 		filterDropdown.innerHTML = '<option value="all">Все месяцы</option>';
-		
+
+		// Extract unique month-year values from overtime data
 		const monthsFound = new Set();
 		sortedKeys.forEach(key => {
 			const date = new Date(key);
@@ -497,9 +498,20 @@ function renderCompTime() {
 				filterDropdown.appendChild(opt);
 			}
 		});
-		
+
+		// Always include current month even if no data exists
+		const now = new Date();
+		const currentMonthVal = `${now.getFullYear()}-${now.getMonth()}`;
+		if (!Array.from(monthsFound).includes(currentMonthVal)) {
+			const currentOpt = document.createElement('option');
+			currentOpt.value = currentMonthVal;
+			currentOpt.textContent = `${monthNames[now.getMonth()]} ${now.getFullYear()} (текущий)`;
+			filterDropdown.appendChild(currentOpt);
+		}
+
 		// Restore selected filter if it still exists
-		if (Array.from(monthsFound).includes(currentSelected)) {
+		const allValues = Array.from(filterDropdown.options).map(opt => opt.value);
+		if (allValues.includes(currentSelected)) {
 			filterDropdown.value = currentSelected;
 		} else {
 			filterDropdown.value = 'all';
@@ -653,36 +665,34 @@ document.getElementById('exportExcelBtn').addEventListener('click', () => {
 function exportToExcel() {
 	const filterDropdown = document.getElementById('comp-month-filter');
 	if (!filterDropdown) return;
-	let selectedVal = filterDropdown.value;
+	const selectedVal = filterDropdown.value;
+	
+	if (selectedVal === 'all') {
+		alert('Выберите конкретный месяц для экспорта таблицы за этот месяц.');
+		return;
+	}
 
 	chrome.storage.local.get(['overtimeDays', 'user'], (data) => {
 		const overtimeDays = data.overtimeDays || {};
 		const user = data.user || {};
 		const employeeName = user.fio || 'Сотрудник';
 
-		let year, month;
-		if (selectedVal === 'all') {
-			const now = new Date();
-			year = now.getFullYear();
-			month = now.getMonth();
-		} else {
-			const parts = selectedVal.split('-');
-			year = parseInt(parts[0], 10);
-			month = parseInt(parts[1], 10) - 1;
-		}
+		const parts = selectedVal.split('-');
+		const year = parseInt(parts[0], 10);
+		const monthIndex = parseInt(parts[1], 10); // 0-based: 0=Январь, 11=Декабрь
 
 		const monthsRU = [
 			"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
 			"Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
 		];
-		const monthNameRU = monthsRU[month];
+		const monthNameRU = monthsRU[monthIndex];
 
-		const daysInMonth = new Date(year, month + 1, 0).getDate();
+		const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
 		const weekdays = [];
 		const weekdayNamesRU = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
 
 		for (let d = 1; d <= daysInMonth; d++) {
-			const dateObj = new Date(year, month, d);
+			const dateObj = new Date(year, monthIndex, d);
 			const dayOfWeek = dateObj.getDay();
 			if (dayOfWeek !== 0 && dayOfWeek !== 6) {
 				weekdays.push({
@@ -759,7 +769,7 @@ function exportToExcel() {
 		weekdays.forEach((wd, index) => {
 			const rowIndex = 3 + index;
 			const yyyy = year;
-			const mm = String(month + 1).padStart(2, '0');
+			const mm = String(monthIndex + 1).padStart(2, '0');
 			const dd = String(wd.day).padStart(2, '0');
 			const dateKey = `${yyyy}-${mm}-${dd}`;
 

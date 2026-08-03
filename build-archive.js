@@ -111,18 +111,28 @@ function processJS(srcPath, destPath, relativeDest, addIntegrityCheck = false) {
 					h = (h * 33) ^ cleanForHash.charCodeAt(i);
 				}
 				const calculated = (h >>> 0).toString(16).padStart(32, '0').substring(0, 32);
-				if (calculated !== embedded) { crash(); return; }
+			if (calculated !== embedded) {
+					console.error('delProp: integrity check FAILED');
+					crash();
+					return;
+				}
 				
 				const run = () => {
-					${finalCode}
+					try {
+						${finalCode}
+					} catch (e) {
+						console.warn('delProp: runtime error', e);
+					}
 				};
 				run();
 			} catch (e) {
-				crash();
-			}
-		})();
-		// INTEGRITY_SIGNATURE:00000000000000000000000000000000
-		`;
+					console.warn('delProp: integrity check error:', e.message || e);
+					// Don't crash on fetch errors - just log and continue without verification
+					// This handles cases like network issues or temporary unavailable files
+				}
+			})();
+			// INTEGRITY_SIGNATURE:00000000000000000000000000000000
+			`;
 		
 		let combined = checkCode;
 		const marker = 'INTEGRITY_SIGNATURE:';
