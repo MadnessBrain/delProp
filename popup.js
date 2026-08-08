@@ -460,8 +460,9 @@ const monthNames = ["Январь", "Февраль", "Март", "Апрель"
 const dayNames = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
 
 function renderCompTime() {
-	chrome.storage.local.get(['overtimeDays', 'carryOverMinutes', 'compGoalHours'], (data) => {
+	chrome.storage.local.get(['overtimeDays', 'paidOvertimeDays', 'carryOverMinutes', 'compGoalHours'], (data) => {
 		const overtimeDays = data.overtimeDays || {};
+		const paidOvertimeDays = data.paidOvertimeDays || {};
 		const carryOverMinutes = data.carryOverMinutes || 0;
 		const compGoalHours = data.compGoalHours || 0;
 
@@ -474,124 +475,194 @@ function renderCompTime() {
 			});
 			goalInput.dataset.listenerAdded = 'true';
 		}
-		
-		// Sort days in descending order
-		const sortedKeys = Object.keys(overtimeDays).sort((a, b) => b.localeCompare(a));
 
-		// Populate month filter dropdown
+		const now = new Date();
+		const thisMonthVal = `${now.getFullYear()}-${now.getMonth()}`;
+
+		// Merge both lists into a unified view: each entry has a 'list' tag
+		// 'comp' = отгулы, 'money' = за деньги
+		const allEntries = [];
+		Object.keys(overtimeDays).forEach(key => {
+			allEntries.push({ key, list: 'comp', ...overtimeDays[key] });
+		});
+		Object.keys(paidOvertimeDays).forEach(key => {
+			allEntries.push({ key, list: 'money', ...paidOvertimeDays[key] });
+		});
+		// Sort by date descending
+		allEntries.sort((a, b) => b.key.localeCompare(a.key));
+
+		// Populate month filter dropdown (union of months from both lists)
 		const filterDropdown = document.getElementById('comp-month-filter');
-		const currentSelected = filterDropdown.value || 'all';
+		const prevSelected = filterDropdown.value || thisMonthVal;
 		filterDropdown.innerHTML = '<option value="all">Все месяцы</option>';
 
-		// Extract unique month-year values from overtime data
 		const monthsFound = new Set();
-		sortedKeys.forEach(key => {
+		allEntries.forEach(({ key }) => {
 			const date = new Date(key);
 			if (isNaN(date.getTime())) return;
 			const monthYearVal = `${date.getFullYear()}-${date.getMonth()}`;
-			const monthYearText = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
 			if (!monthsFound.has(monthYearVal)) {
 				monthsFound.add(monthYearVal);
 				const opt = document.createElement('option');
 				opt.value = monthYearVal;
-				opt.textContent = monthYearText;
+				opt.textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
 				filterDropdown.appendChild(opt);
 			}
 		});
 
 		// Always include current month even if no data exists
-		const now = new Date();
-		const currentMonthVal = `${now.getFullYear()}-${now.getMonth()}`;
-		if (!Array.from(monthsFound).includes(currentMonthVal)) {
+		if (!monthsFound.has(thisMonthVal)) {
 			const currentOpt = document.createElement('option');
-			currentOpt.value = currentMonthVal;
+			currentOpt.value = thisMonthVal;
 			currentOpt.textContent = `${monthNames[now.getMonth()]} ${now.getFullYear()} (текущий)`;
 			filterDropdown.appendChild(currentOpt);
 		}
 
-		// Restore selected filter if it still exists
+		// Default: current month (NOT 'all')
 		const allValues = Array.from(filterDropdown.options).map(opt => opt.value);
-		if (allValues.includes(currentSelected)) {
-			filterDropdown.value = currentSelected;
+		if (allValues.includes(prevSelected)) {
+			filterDropdown.value = prevSelected;
 		} else {
-			filterDropdown.value = 'all';
+			filterDropdown.value = thisMonthVal;
 		}
-		
+
 		// Render function
 		const drawTable = () => {
 			const filterVal = filterDropdown.value;
 			const tbody = document.getElementById('comp-table-body');
 			tbody.innerHTML = '';
-			
-			let totalMinutes = 0;
-			let thisMonthMinutes = 0;
-			const now = new Date();
-			const thisMonthVal = `${now.getFullYear()}-${now.getMonth()}`;
-			
-			sortedKeys.forEach(key => {
-				const dayData = overtimeDays[key];
-				const date = new Date(key);
+
+			let thisMonthCompMin = 0;   // только текущий месяц по отгулам
+			let totalCompMin = 0;        // накоплено за отгулы по всем месяцам
+			let totalMoneyMin = 0;       // накоплено за деньги по всем месяцам
+
+			allEntries.forEach(entry => {
+				const dayData = entry;
+				const date = new Date(entry.key);
 				if (isNaN(date.getTime())) return;
-				
+
 				const monthYearVal = `${date.getFullYear()}-${date.getMonth()}`;
-				
-				// Calculate values for month stats
-				totalMinutes += dayData.minutes || 0;
-				if (monthYearVal === thisMonthVal) {
-					thisMonthMinutes += dayData.minutes || 0;
+
+				// Stats
+				if (entry.list === 'comp') {
+					totalCompMin += dayData.minutes || 0;
+					if (monthYearVal === thisMonthVal) {
+						thisMonthCompMin += dayData.minutes || 0;
+					}
+				} else {
+					totalMoneyMin += dayData.minutes || 0;
 				}
-				
-				// Apply month filter
+
+				// Apply month filter to TABLE ONLY
 				if (filterVal !== 'all' && monthYearVal !== filterVal) {
 					return;
 				}
-				
+
 				const tr = document.createElement('tr');
-				
+				if (entry.list === 'money') {
+					tr.style.background = 'rgba(245, 158, 11, 0.06)';
+					tr.title = 'Переработка за деньги';
+				}
+				if (entry.manual) {
+					tr.style.borderLeft = '3px solid #f59e0b';
+					if (!tr.title) tr.title = 'Ручная запись';
+				}
+
 				// Date column
 				const dateTd = document.createElement('td');
 				dateTd.textContent = date.toLocaleDateString('ru-RU');
-				
+
 				// Day of week
 				const dayTd = document.createElement('td');
 				dayTd.textContent = dayNames[date.getDay()];
-				
+
 				// Time worked
 				const timeTd = document.createElement('td');
 				timeTd.textContent = formatMinutes(dayData.minutes || 0);
 				timeTd.style.fontWeight = '600';
-				timeTd.style.color = 'var(--accent)';
-				
-				// Delete button
+				timeTd.style.color = entry.list === 'money' ? '#f59e0b' : 'var(--accent)';
+				if (entry.manual) {
+					const icon = document.createElement('span');
+					icon.style.marginLeft = '4px';
+					icon.title = 'Ручная запись';
+					icon.textContent = '✏️';
+					timeTd.appendChild(icon);
+				}
+				if (entry.list === 'money') {
+					const badge = document.createElement('span');
+					badge.style.marginLeft = '4px';
+					badge.style.fontSize = '11px';
+					badge.textContent = '💰';
+					badge.title = 'За деньги';
+					timeTd.appendChild(badge);
+				}
+
+				// Actions column (move + delete)
 				const actionTd = document.createElement('td');
 				actionTd.style.textAlign = 'center';
+				actionTd.style.whiteSpace = 'nowrap';
+
+				// Move button (comp <-> money)
+				const moveBtn = document.createElement('button');
+				moveBtn.type = 'button';
+				moveBtn.className = 'comp-btn-delete';
+				moveBtn.style.marginRight = '4px';
+				if (entry.list === 'comp') {
+					moveBtn.innerHTML = '💰';
+					moveBtn.title = 'Перенести в "За деньги"';
+				} else {
+					moveBtn.innerHTML = '📅';
+					moveBtn.title = 'Перенести в "Отгулы"';
+				}
+				moveBtn.addEventListener('click', () => {
+					const fromList = entry.list === 'comp' ? 'отгулы' : 'за деньги';
+					const toList = entry.list === 'comp' ? 'за деньги' : 'отгулы';
+					if (!confirm(`Перенести ${formatMinutes(dayData.minutes)} за ${date.toLocaleDateString('ru-RU')} из "${fromList}" в "${toList}"?`)) return;
+
+					if (entry.list === 'comp') {
+						delete overtimeDays[entry.key];
+						paidOvertimeDays[entry.key] = { minutes: dayData.minutes, slots: dayData.slots, manual: dayData.manual };
+					} else {
+						delete paidOvertimeDays[entry.key];
+						overtimeDays[entry.key] = { minutes: dayData.minutes, slots: dayData.slots, manual: dayData.manual };
+					}
+					chrome.storage.local.set({ overtimeDays, paidOvertimeDays }, renderCompTime);
+				});
+				actionTd.appendChild(moveBtn);
+
+				// Delete button
 				const delBtn = document.createElement('button');
 				delBtn.type = 'button';
 				delBtn.className = 'comp-btn-delete';
 				delBtn.innerHTML = '🗑️';
 				delBtn.title = 'Удалить эту запись';
 				delBtn.addEventListener('click', () => {
-					if (confirm(`Удалить переработку за ${date.toLocaleDateString('ru-RU')}?`)) {
-						delete overtimeDays[key];
+					const listName = entry.list === 'comp' ? 'отгулов' : 'за деньги';
+					if (confirm(`Удалить переработку за ${date.toLocaleDateString('ru-RU')} из списка ${listName}?`)) {
+						if (entry.list === 'comp') {
+							delete overtimeDays[entry.key];
+						} else {
+							delete paidOvertimeDays[entry.key];
+						}
 						chrome.storage.local.get(['deletedOvertimeDays'], (dData) => {
 							const deleted = dData.deletedOvertimeDays || [];
-							if (!deleted.includes(key)) {
-								deleted.push(key);
+							if (!deleted.includes(entry.key)) {
+								deleted.push(entry.key);
 							}
-							chrome.storage.local.set({ overtimeDays, deletedOvertimeDays: deleted }, renderCompTime);
+							chrome.storage.local.set({ overtimeDays, paidOvertimeDays, deletedOvertimeDays: deleted }, renderCompTime);
 						});
 					}
 				});
 				actionTd.appendChild(delBtn);
-				
+
 				tr.appendChild(dateTd);
 				tr.appendChild(dayTd);
 				tr.appendChild(timeTd);
 				tr.appendChild(actionTd);
-				
+
 				tbody.appendChild(tr);
 			});
-			
+
 			// If table is empty
 			if (tbody.children.length === 0) {
 				const tr = document.createElement('tr');
@@ -604,12 +675,14 @@ function renderCompTime() {
 				tr.appendChild(td);
 				tbody.appendChild(tr);
 			}
-			
+
 			// Update summary cards
-			const grandTotalMin = totalMinutes + carryOverMinutes;
+			// "Всего накоплено" = начальный баланс + текущий месяц (по отгулам)
+			const grandTotalMin = carryOverMinutes + thisMonthCompMin;
 			document.getElementById('comp-carryover').textContent = formatMinutes(carryOverMinutes);
 			document.getElementById('comp-total').textContent = formatMinutes(grandTotalMin);
-			document.getElementById('comp-month').textContent = formatMinutes(thisMonthMinutes);
+			document.getElementById('comp-month').textContent = formatMinutes(thisMonthCompMin);
+			document.getElementById('comp-money').textContent = formatMinutes(totalMoneyMin);
 
 			const goalStatusEl = document.getElementById('comp-goal-status');
 			if (goalStatusEl) {
@@ -628,14 +701,73 @@ function renderCompTime() {
 					goalStatusEl.textContent = '';
 				}
 			}
+
+			// Also recalc money badge
+			const compMoneyTotal = document.getElementById('comp-money');
+			if (compMoneyTotal) compMoneyTotal.textContent = formatMinutes(totalMoneyMin);
 		};
-		
+
 		drawTable();
-		
+
 		// Event listener for filter change
 		if (!filterDropdown.dataset.listenerAdded) {
 			filterDropdown.addEventListener('change', drawTable);
 			filterDropdown.dataset.listenerAdded = 'true';
+		}
+
+		// Wire up manual add form (once)
+		if (!document.getElementById('addManualBtn').dataset.wired) {
+			document.getElementById('addManualBtn').dataset.wired = 'true';
+			const addManualBtn = document.getElementById('addManualBtn');
+			const manualForm = document.getElementById('manual-add-form');
+			const manualDate = document.getElementById('manual-date');
+			const manualFrom = document.getElementById('manual-time-from');
+			const manualTo = document.getElementById('manual-time-to');
+			const manualMoney = document.getElementById('manual-is-money');
+			const manualSaveBtn = document.getElementById('manual-save-btn');
+			const manualCancelBtn = document.getElementById('manual-cancel-btn');
+
+			// Pre-fill date to today
+			manualDate.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+			addManualBtn.addEventListener('click', () => {
+				manualForm.style.display = manualForm.style.display === 'none' ? 'block' : 'none';
+				if (manualForm.style.display === 'block') {
+					manualDate.focus();
+				}
+			});
+
+			manualCancelBtn.addEventListener('click', () => {
+				manualForm.style.display = 'none';
+			});
+
+			manualSaveBtn.addEventListener('click', () => {
+				const dateStr = manualDate.value; // YYYY-MM-DD
+				const fromMin = parseTimeToMinutes(manualFrom.value);
+				const toMin = parseTimeToMinutes(manualTo.value);
+				const isMoney = manualMoney.checked;
+
+				if (!dateStr || fromMin === null || toMin === null || toMin <= fromMin) {
+					alert('Проверьте дату и время: конец должен быть позже начала.');
+					return;
+				}
+
+				const minutes = toMin - fromMin;
+				const slots = Array.from({ length: minutes }, (_, i) => fromMin + i);
+				const entry = { minutes, slots, manual: true };
+
+				if (isMoney) {
+					paidOvertimeDays[dateStr] = entry;
+				} else {
+					overtimeDays[dateStr] = entry;
+				}
+
+				chrome.storage.local.set({ overtimeDays, paidOvertimeDays }, () => {
+					manualForm.style.display = 'none';
+					manualMoney.checked = false;
+					renderCompTime();
+				});
+			});
 		}
 	});
 }

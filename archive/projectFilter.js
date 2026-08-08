@@ -211,7 +211,7 @@ window.initProjectFilter = function(treeContainer) {
 
 	// Register listeners for input locking and clearing
 	document.addEventListener("delPropResponse", (e) => {
-		const { action, blocked } = e.detail;
+		const { action, blocked, tabId } = e.detail;
 		if (action === "blockSearchInput") {
 			searchInput.disabled = blocked;
 			if (blocked) {
@@ -226,9 +226,22 @@ window.initProjectFilter = function(treeContainer) {
 			}
 		} else if (action === "clearSearchInput") {
 			searchInput.value = '';
-			document.dispatchEvent(new CustomEvent("delPropTrigger", { 
-				detail: { action: "smartSearch", query: "" } 
+			document.dispatchEvent(new CustomEvent("delPropTrigger", {
+				detail: { action: "smartSearch", query: "" }
 			}));
+		} else if (action === "tabSwitched") {
+			// A tab was just switched to (e.g. via history restore). Clear this filter
+			// input so it doesn't carry stale state from the previous tab.
+			searchInput.value = '';
+			if (typeof window.resetFilterHistoryIndex === 'function') {
+				window.resetFilterHistoryIndex();
+			}
+			const dropdown = treeContainer.querySelector('.delprop-autocomplete-dropdown');
+			if (dropdown) { dropdown.style.display = 'none'; dropdown.innerHTML = ''; }
+			document.dispatchEvent(new CustomEvent("delPropTrigger", {
+				detail: { action: "smartSearch", query: "" }
+			}));
+			window.applyFilter(treeContainer);
 		}
 	});
 

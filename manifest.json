@@ -2,12 +2,12 @@
   "manifest_version": 3,
   "name": "delProp",
   "description": "Улучшайзер",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "author": "R&L",
   "content_scripts": [
     {
       "matches": [
-        "http://pcserv.vympel/*"
+        "https://pcserv.vympel/*"
       ],
       "js": [
         "utils/time.js",

@@ -25,7 +25,8 @@ async function getActivityRows(id) {
 	const year = now.getFullYear();
 
 	try {
-		const response = await fetch(`http://pcserv.vympel/get_activity2.php?from=01.${month}.${year}&to=01.${month+1}.${year}&user_id=${id}`);
+		const addr = `https://pcserv.vympel/get_activity2.php?from=01.${month}.${year}&to=01.${month+1}.${year}&user_id=${id}&dhxr${new Date().getTime()}=1`
+		const response = await fetch(addr);
 		const data = await response.json();
 		return data.rows || [];
 	} catch (e) {

@@ -323,6 +323,61 @@ document.addEventListener("delPropRequest", (e) => {
 			setTimeout(tryGet, 100);
 			setTimeout(tryGet, 300);
 		}
+	} else if (action === "findTabByName") {
+		// Find a MainTabBar tab id by its visible display name
+		try {
+			if (typeof MainTabBar === 'undefined') {
+				document.dispatchEvent(new CustomEvent("delPropResponse", {
+					detail: { action: "findTabResult", tabId: null, requestId: e.detail.requestId }
+				}));
+				return;
+			}
+			const allTabIds = MainTabBar.getAllTabs();
+			const targetName = (e.detail.tabName || '').trim();
+			let foundId = null;
+			for (const tabId of allTabIds) {
+				// Each tab DOM element contains a .dhxtabbar_tab_text with the label
+				// Find by matching tab id order: MainTabBar.t[tabId].tab holds the DOM node
+				const tabObj = MainTabBar.t && MainTabBar.t[tabId] && MainTabBar.t[tabId].tab;
+				if (tabObj) {
+					const textEl = tabObj.querySelector('.dhxtabbar_tab_text');
+					const tabText = textEl ? (textEl.innerText || textEl.textContent || '').trim() : (tabObj.innerText || '').trim();
+					if (tabText === targetName) {
+						foundId = tabId;
+						break;
+					}
+				}
+			}
+			document.dispatchEvent(new CustomEvent("delPropResponse", {
+				detail: { action: "findTabResult", tabId: foundId, requestId: e.detail.requestId }
+			}));
+		} catch (err) {
+			console.error('delProp: findTabByName error', err);
+			document.dispatchEvent(new CustomEvent("delPropResponse", {
+				detail: { action: "findTabResult", tabId: null, requestId: e.detail.requestId }
+			}));
+		}
+	} else if (action === "switchToTab") {
+		// Activate the given tab id in MainTabBar
+		try {
+			if (typeof MainTabBar !== 'undefined' && e.detail.tabId) {
+				const tabId = e.detail.tabId;
+				if (MainTabBar.t && MainTabBar.t[tabId]) {
+					// Use the internal API the page itself relies on
+					if (typeof MainTabBar._setTabActive === 'function') {
+						MainTabBar._setTabActive(tabId, true);
+					} else if (MainTabBar.tabs && typeof MainTabBar.tabs(tabId).setActive === 'function') {
+						MainTabBar.tabs(tabId).setActive();
+					}
+					// Reset filter state on the newly activated tab so nothing lingers from the previous tab
+					document.dispatchEvent(new CustomEvent("delPropResponse", {
+						detail: { action: "tabSwitched", tabId }
+					}));
+				}
+			}
+		} catch (err) {
+			console.error('delProp: switchToTab error', err);
+		}
 	}
 });
 
