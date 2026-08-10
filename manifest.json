@@ -7,7 +7,6 @@
   "content_scripts": [
     {
       "matches": [
-        "http://pcserv.vympel/*",
         "https://pcserv.vympel/*"
       ],
       "js": [
