@@ -2,11 +2,14 @@
 	window.delProp = window.delProp || {};
 
 	let bubbles = false;
-	const timeOutWork = [
-		{ start: window.delProp.helpers.timeNorm('10:00'), end: window.delProp.helpers.timeNorm('10:15'), name: 'Первый перекур' },
-		{ start: window.delProp.helpers.timeNorm('14:30'), end: window.delProp.helpers.timeNorm('14:45'), name: 'Второй перекур' },
-		{ start: window.delProp.helpers.timeNorm('11:45'), end: window.delProp.helpers.timeNorm('12:30'), name: 'ОБЕД' }
-	];
+	// timeOutWork entries are computed lazily because timeNorm requires helpers to be loaded first
+	function getTimeOutWork() {
+		return [
+			{ start: window.delProp.helpers.timeNorm('10:00'), end: window.delProp.helpers.timeNorm('10:15'), name: 'Первый перекур' },
+			{ start: window.delProp.helpers.timeNorm('14:30'), end: window.delProp.helpers.timeNorm('14:45'), name: 'Второй перекур' },
+			{ start: window.delProp.helpers.timeNorm('11:45'), end: window.delProp.helpers.timeNorm('12:30'), name: 'ОБЕД' }
+		];
+	}
 
 	const msg = {
 		work: "😔 Работать:",
@@ -311,7 +314,7 @@
 				let min = [];
 				let max = [];
 
-				for (const a of timeOutWork) {
+				for (const a of getTimeOutWork()) {
 					if (now < a.start) { min.push(a.start); }
 					max.push(a.end);
 
