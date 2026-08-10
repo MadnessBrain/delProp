@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "delProp",
   "description": "Улучшайзер",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "author": "R&L",
   "content_scripts": [
     {
@@ -16,6 +16,10 @@
         "home/sidebar.js",
         "home/misc.js",
         "home/header.js",
+        "home/pivo/messages.js",
+        "home/pivo/themes.js",
+        "home/pivo/render.js",
+        "home/pivo/core.js",
         "home/pivo.js"
       ],
       "css": [
