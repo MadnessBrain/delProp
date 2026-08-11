@@ -18,7 +18,9 @@ window.delProp.pivo = window.delProp.pivo || {};
 		user: null,
 		theme: 'beer',
 		startWork: 0,
-		endWork: 0
+		endWork: 0,
+		hasBubbles() { return this.bubblesInit; },
+		drawBubbles(count, wrapper) { drawBubbles(count, wrapper); }
 	};
 
 	function getShadowRoot() {

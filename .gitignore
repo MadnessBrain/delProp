@@ -1,7 +1,41 @@
+# Windows / OS
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
 .DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Logs & temp
 *.log
-dist/
+*.tmp
 *.tmp.js
-spy
+*.swp
+
+# Build output
+dist/
+
+# Internal analysis tools (sensitive references, host-specific)
+spy/
+
+# Dependencies (esbuild via npx)
+node_modules/
+package.json
+package-lock.json
+
+# IDE
+.idea/
+.vscode/
+
+# Archives
 *.rar
+*.zip
+
+# dotenv / secrets
+.env
+.env.local

@@ -70,6 +70,7 @@
         "home/header.css"
       ],
       "matches": [
+        "https://pcserv.vympel/*",
         "http://pcserv.vympel/*",
         "http://archive.vympel/*"
       ]
