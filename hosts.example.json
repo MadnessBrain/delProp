@@ -1,0 +1,26 @@
+{
+  "//": "Пример конфигурации хостов. Скопируйте в hosts.json и подставьте реальные адреса. hosts.json в .gitignore и не попадает в репозиторий.",
+  "manifest": {
+    "mainMatches": [
+      "https://portal.example.internal/*"
+    ],
+    "archiveMatches": [
+      "http://archive.example.internal/*"
+    ],
+    "resourceMatches": [
+      "https://portal.example.internal/*",
+      "http://portal.example.internal/*",
+      "http://archive.example.internal/*"
+    ]
+  },
+  "runtime": {
+    "activityEndpoint": "https://portal.example.internal/get_activity.php",
+    "popupActiveTabUrl": "http://portal.example.internal/*",
+    "authorUrl": "https://author.example.org",
+    "allowedHostFragments": [
+      "portal.example.internal",
+      "archive.example.internal",
+      "author.example.org"
+    ]
+  }
+}

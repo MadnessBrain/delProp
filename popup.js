@@ -1,5 +1,9 @@
 const form = document.forms.my
-const queryOptions = {active: true, url: "http://pcserv.vympel/*"}
+const queryOptions = {active: true, url: self.DELPROP_HOSTS.popupActiveTabUrl}
+
+// Ссылка автора берётся из конфига хостов, чтобы не хардкодить адрес в разметке
+const authorLink = document.getElementById('authorLink')
+if (authorLink && self.DELPROP_HOSTS.authorUrl) authorLink.href = self.DELPROP_HOSTS.authorUrl
 
 const dellNewsField = form.elements.dellNews,
 	changeField = form.elements.change,
@@ -348,7 +352,7 @@ function restoreSettings() {
 
 const reloadActiveTab = () => {
 	chrome.tabs.query({active: true, currentWindow: true}, function(tabs){ 
-		if(tabs[0] && (tabs[0].url.includes("pcserv.vympel") || tabs[0].url.includes("r-and-l.ru") || tabs[0].url.includes("archive.vympel"))) {
+		if(tabs[0] && self.DELPROP_HOSTS.allowedHostFragments.some(h => tabs[0].url.includes(h))) {
 			chrome.tabs.reload(tabs[0].id)
 		}
 	})

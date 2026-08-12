@@ -8,6 +8,7 @@
 		const s = document.createElement("script");
 		s.type = "text/javascript";
 		s.dataset.isAdmin = Number(isAdmin);
+		s.dataset.activityEndpoint = (self.DELPROP_HOSTS && self.DELPROP_HOSTS.activityEndpoint) || "";
 		s.src = chrome.runtime.getURL('patch/patch.js');
 		if (document.body) {
 			document.body.append(s);

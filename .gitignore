@@ -22,6 +22,7 @@ dist/
 
 # Internal analysis tools (sensitive references, host-specific)
 spy/
+img/
 
 # Dependencies (esbuild via npx)
 node_modules/
@@ -39,3 +40,8 @@ package-lock.json
 # dotenv / secrets
 .env
 .env.local
+
+# Host config & generated artifacts (real site addresses must not reach the repo)
+hosts.json
+hosts.generated.js
+manifest.json

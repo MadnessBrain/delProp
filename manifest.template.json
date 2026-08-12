@@ -7,9 +7,10 @@
   "content_scripts": [
     {
       "matches": [
-        "https://pcserv.vympel/*"
+        "__MAIN_MATCHES__"
       ],
       "js": [
+        "hosts.generated.js",
         "utils/time.js",
         "home/core.js",
         "home/news.js",
@@ -23,7 +24,7 @@
         "home/pivo.js"
       ],
       "css": [
-        "home/vympel.css",
+        "home/portal.css",
         "home/rndimg.css",
         "home/header.css"
       ],
@@ -31,9 +32,10 @@
     },
     {
       "matches": [
-        "http://archive.vympel/*"
+        "__ARCHIVE_MATCHES__"
       ],
       "js": [
+        "hosts.generated.js",
         "utils/time.js",
         "archive/tabSync.js",
         "archive/filterHistory.js",
@@ -70,9 +72,7 @@
         "home/header.css"
       ],
       "matches": [
-        "https://pcserv.vympel/*",
-        "http://pcserv.vympel/*",
-        "http://archive.vympel/*"
+        "__RESOURCE_MATCHES__"
       ]
     }
   ]

@@ -1,5 +1,8 @@
 const currentScript = document.currentScript;
 const isAdmin = currentScript ? Number(currentScript.dataset.isAdmin) : 0;
+// Полный адрес запроса активности к БД передаётся из content-script (home/misc.js)
+// через data-атрибут, чтобы реальный хост и путь эндпоинта не хранились в исходниках.
+const activityEndpoint = (currentScript && currentScript.dataset.activityEndpoint) || '';
 
 const setUserDiv = async ()=>{
 	if(typeof USER_DATA !== 'undefined' && !!USER_DATA.fio){
@@ -25,7 +28,7 @@ async function getActivityRows(id) {
 	const year = now.getFullYear();
 
 	try {
-		const addr = `https://pcserv.vympel/get_activity2.php?from=01.${month}.${year}&to=01.${month+1}.${year}&user_id=${id}&dhxr${new Date().getTime()}=1`
+		const addr = `${activityEndpoint}?from=01.${month}.${year}&to=01.${month+1}.${year}&user_id=${id}&dhxr${new Date().getTime()}=1`
 		const response = await fetch(addr);
 		const data = await response.json();
 		return data.rows || [];

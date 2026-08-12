@@ -1,11 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { generate } = require('./gen-manifest');
 
 const distDir = path.join(__dirname, 'dist');
 const fullDest = path.join(distDir, 'full');
 
 console.log("=== Building Full Version ===");
+
+// Генерируем manifest.json и hosts.generated.js из шаблона + hosts.json перед сборкой
+generate(__dirname);
 
 // Clear dist/full directory
 if (fs.existsSync(fullDest)) {
@@ -35,9 +39,11 @@ function copyFile(srcPath, destPath) {
 }
 
 const ignoreList = [
-	'.git', '.agents', 'dist', 'spy', 'build.js', '.gitignore',
+	'.git', '.agents', 'dist', 'spy', 'build.js', '.gitignore', '.gitattributes',
 	'CHANGELOG.md', 'task.md', 'walkthrough.md', 'implementation_plan.md', 'README.md',
-	'Thumbs.db', 'node_modules', 'package.json', 'package-lock.json'
+	'Thumbs.db', 'node_modules', 'package.json', 'package-lock.json',
+	'gen-manifest.js', 'manifest.template.json', 'hosts.json', 'hosts.example.json',
+	'.env', '.env.local', '.env.example'
 ];
 
 function buildRecursive(src, dest) {
