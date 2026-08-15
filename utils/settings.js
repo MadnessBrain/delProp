@@ -8,7 +8,9 @@ window.delProp.defaultSettings = {
 	},
 	dellNewsField: {
 		news: 'false',
-		newsList: []
+		newsList: [],
+		showImages: 'false',
+		imageFilter: 'anime'
 	},
 	styleField: {
 		styled: 'false',

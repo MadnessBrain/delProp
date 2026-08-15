@@ -171,6 +171,28 @@
             </select>
           </div>
         </label>
+        <div class="news_collapse collapse-section">
+          <label class="toggle-label">
+            Картинки вместо новостей
+            <div class="select-wrapper">
+              <select id="showImages">
+                <option value="true">✅ Да</option>
+                <option value="false">❌ Нет</option>
+              </select>
+            </div>
+          </label>
+          <div class="showImages_collapse collapse-section">
+            <label class="field-label" for="imageFilter">Категория картинок</label>
+            <div class="select-wrapper">
+              <select id="imageFilter">
+                <option value="anime">🌸 Аниме девочки</option>
+                <option value="neko">🐱 Неко</option>
+                <option value="cats">🐈 Котики</option>
+                <option value="photos">🏞️ Природа / фото</option>
+              </select>
+            </div>
+          </div>
+        </div>
         <button type="button" id="restoreNewsBtn" class="btn-secondary"
           style="width: 100%; justify-content: center; margin-top: 8px;">
           🔄 Восстановить скрытые новости

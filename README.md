@@ -1,6 +1,6 @@
 # delProp — Улучшайзер внутреннего портала
 
-[![Version](https://img.shields.io/badge/version-1.5.2-blue.svg)](manifest.template.json)
+[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg)](manifest.template.json)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange.svg)](manifest.template.json)
 

@@ -286,167 +286,30 @@
 		}
 
 		if (isColorized) {
-			chrome.storage.local.get('colorz', ({ colorz = {} }) => {
-				let palette = [];
-				let { mainColors = [], mainHoverColors = [], secondColors = [] } = colorz;
+			const { mainColor, mainColorHover } = styleField.colorTheme || {};
 
-				if (mainColors.length === 0) { mainColors = ['rgb(181, 222, 255)', 'rgb(226, 239, 255)']; }
-				if (mainHoverColors.length === 0) { mainHoverColors = ['rgb(241, 247, 255)']; }
+			// Исходные цвета портала, которые заменяются на выбранный в попапе цвет.
+			// Палитра с ручным тегированием убрана — меняем известные фоновые цвета сайта.
+			const mainColors = ['rgb(181, 222, 255)', 'rgb(226, 239, 255)'];
+			const mainHoverColors = ['rgb(241, 247, 255)'];
 
-				const { mainColor, mainColorHover, secondColor } = styleField.colorTheme || {};
-
-				if (styleField.styled === 'true') {
-					for (let sheet of document.styleSheets) {
-						try {
-							for (let rule of sheet.cssRules) {
-								if (rule?.style?.backgroundColor) {
-									const bg = rule.style.backgroundColor;
-									if (!palette.includes(bg) && !mainHoverColors.includes(bg) && bg !== 'transparent' && bg !== 'initial') {
-										palette.push(bg);
-									}
-								}
-								if (mainColors.includes(rule.style?.backgroundColor) && mainColor) {
-									rule.style.backgroundColor = mainColor;
-								}
-								if (mainHoverColors.includes(rule.style?.backgroundColor) && mainColorHover) {
-									rule.style.backgroundColor = mainColorHover;
-								}
-								if (secondColors.includes(rule.style?.backgroundColor) && secondColor) {
-									rule.style.backgroundColor = secondColor;
-								}
+			if (styleField.styled === 'true' && (mainColor || mainColorHover)) {
+				for (let sheet of document.styleSheets) {
+					try {
+						for (let rule of sheet.cssRules) {
+							const bg = rule?.style?.backgroundColor;
+							if (!bg) continue;
+							if (mainColors.includes(bg) && mainColor) {
+								rule.style.backgroundColor = mainColor;
+							} else if (mainHoverColors.includes(bg) && mainColorHover) {
+								rule.style.backgroundColor = mainColorHover;
 							}
-						} catch (e) {
-							// Ignored cross-origin styles
 						}
+					} catch (e) {
+						// Ignored cross-origin styles
 					}
 				}
-
-				const palBtn = document.createElement('button');
-				palBtn.textContent = 'палитра';
-				palBtn.style.cssText = `
-					z-index: 40;
-					position: absolute;
-					bottom: 60px;
-					left: 10px;
-				`;
-				document.body.appendChild(palBtn);
-
-				palBtn.onclick = (e) => {
-					e.preventDefault();
-
-					const { container: cont, gallary: box } = getGalleryUI();
-					cont.classList.remove('hidden');
-
-					const getSize = () => {
-						const h = box.clientHeight - 30;
-						const w = box.clientWidth - 30;
-						const a = Math.sqrt((w * h * 0.9) / palette.length);
-						const max = Math.max(w, h);
-						const s = max / Math.ceil(max / a);
-						return s - 6 || 30;
-					};
-
-					const size = getSize();
-					const colorBlocks = [];
-
-					box.innerHTML = '';
-					palette.forEach(color => {
-						const div = document.createElement('div');
-						div.style.cssText = `
-							height: ${size}px;
-							width: ${size}px;
-							cursor: pointer;
-						`;
-						div.style.backgroundColor = color;
-						div.textContent = color;
-						div.dataset.color = color;
-
-						if (mainColors?.includes(color)) {
-							div.style.outline = '5px solid lime';
-							div.dataset.route = 'main';
-						} else if (secondColors?.includes(color)) {
-							div.style.outline = '5px solid red';
-							div.dataset.route = 'second';
-						}
-
-						colorBlocks.push(div);
-						box.appendChild(div);
-					});
-
-					const handleResize = () => {
-						const newSize = getSize();
-						colorBlocks.forEach(el => {
-							el.style.height = `${newSize}px`;
-							el.style.width = `${newSize}px`;
-						});
-					};
-					window.addEventListener('resize', handleResize);
-
-					const colorForm = document.createElement('form');
-					colorForm.name = 'colorize';
-					colorForm.innerHTML = `
-						<label><input type="radio" name="color" checked value='main'> Main</label>
-						<label><input type="radio" name="color" value='second'> Second</label>
-					`;
-					cont.appendChild(colorForm);
-					const rSelect = colorForm.elements.color;
-
-					const removeFromArr = (target) => {
-						let route = target.dataset.route;
-						if (route === 'main') {
-							mainColors.splice(mainColors.indexOf(target.dataset.color), 1);
-							chrome.storage.local.set({ colorz: { ...colorz, mainColors } });
-						}
-						if (route === 'second') {
-							secondColors.splice(secondColors.indexOf(target.dataset.color), 1);
-							chrome.storage.local.set({ colorz: { ...colorz, secondColors } });
-						}
-						delete target.dataset.route;
-					};
-
-					const addToColorList = (event) => {
-						const target = event.target;
-						const val = rSelect.value;
-						if (target.dataset.route && target.dataset.route === val) {
-							removeFromArr(target);
-							target.style.outline = 'unset';
-						} else {
-							if (val === 'main') {
-								if (!mainColors.includes(target.dataset.color)) {
-									mainColors.push(target.dataset.color);
-								}
-								if (target.dataset.route) { removeFromArr(target); }
-								target.style.outline = '5px solid lime';
-								target.dataset.route = 'main';
-								chrome.storage.local.set({ colorz: { ...colorz, mainColors } });
-							} else if (val === 'second') {
-								if (!secondColors.includes(target.dataset.color)) {
-									secondColors.push(target.dataset.color);
-								}
-								if (target.dataset.route) { removeFromArr(target); }
-								target.style.outline = '5px solid red';
-								target.dataset.route = 'second';
-								chrome.storage.local.set({ colorz: { ...colorz, secondColors } });
-							}
-						}
-					};
-
-					colorBlocks.forEach(div => div.onclick = addToColorList);
-
-					const closePalette = (event) => {
-						if (event.key === "Escape") {
-							cont.classList.add('hidden');
-							cont.querySelectorAll('button').forEach(el => el.classList.remove('hidden'));
-							box.innerHTML = '';
-							colorForm.remove();
-							window.removeEventListener('resize', handleResize);
-							document.removeEventListener('keydown', closePalette);
-						}
-					};
-					document.addEventListener('keydown', closePalette);
-					cont.querySelectorAll('button').forEach(el => el.classList.add('hidden'));
-				};
-			});
+			}
 		}
 	}
 

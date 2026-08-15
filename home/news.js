@@ -75,6 +75,63 @@
 		node.appendChild(btn);
 	}
 
+	// Requests a random image URL from the background service worker and shows it.
+	function loadImageInto(img, filter) {
+		img.style.opacity = '0.4';
+		chrome.runtime.sendMessage({ type: 'delprop_random_image', filter }, (resp) => {
+			if (chrome.runtime.lastError) {
+				console.error('delProp: image request failed:', chrome.runtime.lastError.message);
+				img.style.opacity = '1';
+				return;
+			}
+			if (resp && resp.url) {
+				img.onload = () => { img.style.opacity = '1'; };
+				img.onerror = () => { img.style.opacity = '1'; };
+				img.src = resp.url;
+			} else {
+				img.style.opacity = '1';
+			}
+		});
+	}
+
+	// Injects a "picture instead of news" card, mirroring the custom-news card logic.
+	function createImageCard(container, filter) {
+		const card = document.createElement('div');
+		card.className = 'dhx_list_item dhx_list_news_item delprop-image-news';
+		card.style.cssText = 'border-left:4px solid #ec4899;padding:8px;background-color:#fff0f7;margin-bottom:6px;border-radius:3px;box-sizing:border-box;position:relative;text-align:center;';
+		card.innerHTML = `
+			<div style="font-weight:bold;color:#9d174d;margin-bottom:6px;font-family:inherit;">🖼️ Картинка дня</div>
+			<img class="delprop-image-img" alt="картинка" style="max-width:100%;border-radius:4px;display:block;margin:0 auto;min-height:40px;cursor:pointer;">
+			<button type="button" class="delprop-image-refresh" style="margin-top:6px;cursor:pointer;font-family:inherit;font-size:12px;padding:3px 10px;border:1px solid #ec4899;background:#fff;color:#9d174d;border-radius:4px;">🔄 ещё</button>
+		`;
+		container.prepend(card);
+
+		const img = card.querySelector('.delprop-image-img');
+		const btn = card.querySelector('.delprop-image-refresh');
+
+		img.addEventListener('click', () => {
+			if (img.src) window.delProp.openModal(img.src);
+		});
+		btn.addEventListener('click', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			loadImageInto(img, filter);
+		});
+
+		loadImageInto(img, filter);
+		return card;
+	}
+
+	function syncImageCard(container, settings) {
+		const enabled = settings.news === 'true' && settings.showImages === 'true';
+		const existing = container.querySelector('.delprop-image-news');
+		if (enabled) {
+			if (!existing) createImageCard(container, settings.imageFilter || 'anime');
+		} else if (existing) {
+			existing.remove();
+		}
+	}
+
 	function initNewsCleaner() {
 		let customNewsList = [];
 
@@ -165,6 +222,7 @@
 				}
 
 				applySemenStyle();
+				syncImageCard(container, currentSettings);
 			});
 		}
 

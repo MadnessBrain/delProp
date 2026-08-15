@@ -11,7 +11,7 @@ const dellNewsField = form.elements.dellNews,
 	workTimerField = form.elements.workTimer,
 	mainUserField = form.elements.mainUser,
 	archiveField = form.elements.archive,
-	toHide = ['btns', 'styled', 'colorized', 'enabled']
+	toHide = ['btns', 'styled', 'colorized', 'enabled', 'news', 'showImages']
 
 // Shared time helpers (mirrors utils/time.js for popup context)
 function parseTimeToMinutes(timeStr) {
@@ -40,7 +40,9 @@ function getDefaultSettings() {
 		},
 		dellNewsField: {
 			news: 'false',
-			newsList: []
+			newsList: [],
+			showImages: 'false',
+			imageFilter: 'anime'
 		},
 		styleField: {
 			styled: 'false',

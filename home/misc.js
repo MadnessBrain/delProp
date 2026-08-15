@@ -184,8 +184,9 @@
 
 		if (startMin === null || endMin === null || endFMin === null) return;
 
-		chrome.storage.local.get(['overtimeDays', 'deletedOvertimeDays'], (data) => {
+		chrome.storage.local.get(['overtimeDays', 'paidOvertimeDays', 'deletedOvertimeDays'], (data) => {
 			const overtimeDays = data.overtimeDays || {};
+			const paidOvertimeDays = data.paidOvertimeDays || {};
 			const deletedOvertimeDays = data.deletedOvertimeDays || [];
 			let changed = false;
 
@@ -202,6 +203,16 @@
 
 				// If day was explicitly deleted by the user, do not re-import it
 				if (deletedOvertimeDays.includes(storageKey)) return;
+
+				// If day was moved to "За деньги" (paidOvertimeDays), it must not be
+				// re-imported into отгулы. Also drop any stray duplicate left in overtimeDays.
+				if (paidOvertimeDays[storageKey]) {
+					if (overtimeDays[storageKey]) {
+						delete overtimeDays[storageKey];
+						changed = true;
+					}
+					return;
+				}
 
 				const loginTime = row.data.at(2);
 				const logoutTime = row.data.at(3);
