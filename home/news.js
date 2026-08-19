@@ -75,38 +75,75 @@
 		node.appendChild(btn);
 	}
 
-	// Requests a random image URL from the background service worker and shows it.
-	function loadImageInto(img, filter) {
+	// Built-in image sources. Each is a URL that returns an image DIRECTLY.
+	// {random} -> random string (cache-bust), {n} -> random integer 0..99999.
+	const IMAGE_SOURCES = {
+		anime:  ['https://www.thiswaifudoesnotexist.net/example-{n}.jpg'],
+		cats:   ['https://cataas.com/cat?_={random}'],
+		photos: ['https://loremflickr.com/600/400?_={random}'],
+		bears:  ['https://placebear.com/600/400?_={random}']
+	};
+
+	function fillRandom(url) {
+		return String(url)
+			.replace(/\{random\}/gi, Date.now() + '_' + Math.floor(Math.random() * 1e6))
+			.replace(/\{n\}/gi, Math.floor(Math.random() * 100000));
+	}
+
+	// Picks a direct-image URL for the chosen filter (built-in or user's custom list).
+	function resolveImageUrl(settings) {
+		const filter = settings.imageFilter || 'cats';
+		let templates;
+		if (filter === 'custom') {
+			templates = String(settings.customImageUrls || '')
+				.split(/[\n,]+/)
+				.map(s => s.trim())
+				.filter(s => /^https?:\/\//i.test(s));
+		} else {
+			templates = IMAGE_SOURCES[filter] || IMAGE_SOURCES.cats;
+		}
+		if (!templates.length) return null;
+		const tpl = templates[Math.floor(Math.random() * templates.length)];
+		return fillRandom(tpl);
+	}
+
+	// Loads a fresh image into the <img>, or shows a hint if no source is configured.
+	function loadImageInto(img, hint, settings) {
+		const url = resolveImageUrl(settings);
+		if (!url) {
+			img.removeAttribute('src');
+			img.style.display = 'none';
+			hint.style.display = 'block';
+			return;
+		}
+		hint.style.display = 'none';
+		img.style.display = 'block';
 		img.style.opacity = '0.4';
-		chrome.runtime.sendMessage({ type: 'delprop_random_image', filter }, (resp) => {
-			if (chrome.runtime.lastError) {
-				console.error('delProp: image request failed:', chrome.runtime.lastError.message);
-				img.style.opacity = '1';
-				return;
-			}
-			if (resp && resp.url) {
-				img.onload = () => { img.style.opacity = '1'; };
-				img.onerror = () => { img.style.opacity = '1'; };
-				img.src = resp.url;
-			} else {
-				img.style.opacity = '1';
-			}
-		});
+		img.onload = () => { img.style.opacity = '1'; };
+		img.onerror = () => {
+			img.style.opacity = '1';
+			img.style.display = 'none';
+			hint.textContent = 'Не удалось загрузить картинку (источник недоступен или заблокирован)';
+			hint.style.display = 'block';
+		};
+		img.src = url;
 	}
 
 	// Injects a "picture instead of news" card, mirroring the custom-news card logic.
-	function createImageCard(container, filter) {
+	function createImageCard(container, settings) {
 		const card = document.createElement('div');
 		card.className = 'dhx_list_item dhx_list_news_item delprop-image-news';
 		card.style.cssText = 'border-left:4px solid #ec4899;padding:8px;background-color:#fff0f7;margin-bottom:6px;border-radius:3px;box-sizing:border-box;position:relative;text-align:center;';
 		card.innerHTML = `
 			<div style="font-weight:bold;color:#9d174d;margin-bottom:6px;font-family:inherit;">🖼️ Картинка дня</div>
 			<img class="delprop-image-img" alt="картинка" style="max-width:100%;border-radius:4px;display:block;margin:0 auto;min-height:40px;cursor:pointer;">
+			<div class="delprop-image-hint" style="display:none;font-size:12px;color:#9d174d;font-family:inherit;padding:6px;">Источник картинок не задан. Выберите категорию или добавьте свои адреса в настройках.</div>
 			<button type="button" class="delprop-image-refresh" style="margin-top:6px;cursor:pointer;font-family:inherit;font-size:12px;padding:3px 10px;border:1px solid #ec4899;background:#fff;color:#9d174d;border-radius:4px;">🔄 ещё</button>
 		`;
 		container.prepend(card);
 
 		const img = card.querySelector('.delprop-image-img');
+		const hint = card.querySelector('.delprop-image-hint');
 		const btn = card.querySelector('.delprop-image-refresh');
 
 		img.addEventListener('click', () => {
@@ -115,10 +152,10 @@
 		btn.addEventListener('click', (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			loadImageInto(img, filter);
+			loadImageInto(img, hint, settings);
 		});
 
-		loadImageInto(img, filter);
+		loadImageInto(img, hint, settings);
 		return card;
 	}
 
@@ -126,7 +163,7 @@
 		const enabled = settings.news === 'true' && settings.showImages === 'true';
 		const existing = container.querySelector('.delprop-image-news');
 		if (enabled) {
-			if (!existing) createImageCard(container, settings.imageFilter || 'anime');
+			if (!existing) createImageCard(container, settings);
 		} else if (existing) {
 			existing.remove();
 		}

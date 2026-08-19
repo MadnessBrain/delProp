@@ -10,7 +10,8 @@ window.delProp.defaultSettings = {
 		news: 'false',
 		newsList: [],
 		showImages: 'false',
-		imageFilter: 'anime'
+		imageFilter: 'anime',
+		customImageUrls: ''
 	},
 	styleField: {
 		styled: 'false',

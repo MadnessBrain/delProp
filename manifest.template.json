@@ -57,11 +57,6 @@
     "activeTab",
     "tabs"
   ],
-  "host_permissions": [
-    "https://api.waifu.pics/*",
-    "https://nekos.best/*",
-    "https://api.thecatapi.com/*"
-  ],
   "action": {
     "default_popup": "popup.html",
     "default_title": "delProp"

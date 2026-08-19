@@ -42,7 +42,8 @@ function getDefaultSettings() {
 			news: 'false',
 			newsList: [],
 			showImages: 'false',
-			imageFilter: 'anime'
+			imageFilter: 'anime',
+			customImageUrls: ''
 		},
 		styleField: {
 			styled: 'false',
@@ -257,11 +258,14 @@ function saveFieldData(field) {
 
 	for (const el of elem) {
 
-		switch (el.localName) {
-			case 'select':
-				res[el.id]=el.value
-				break
-			case 'input':
+			switch (el.localName) {
+				case 'select':
+					res[el.id]=el.value
+					break
+				case 'textarea':
+					res[el.id]=el.value
+					break
+				case 'input':
 				if (el.id === 'all') {break}
 				if (el.type === 'checkbox') {
 					if (!res[el.name]) res[el.name] = []
@@ -323,6 +327,8 @@ function restoreSettings() {
 				
 				if (elements.length === 1 && firstEl.localName === 'select') {
 					firstEl.value = formFields[field][name]
+				} else if (elements.length === 1 && firstEl.localName === 'textarea') {
+					firstEl.value = formFields[field][name] || ''
 				} else if (elements.length === 1 && firstEl.localName === 'input' && firstEl.type !== 'checkbox') {
 					firstEl.value = formFields[field][name]
 				} else {

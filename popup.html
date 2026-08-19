@@ -186,10 +186,22 @@
             <div class="select-wrapper">
               <select id="imageFilter">
                 <option value="anime">🌸 Аниме девочки</option>
-                <option value="neko">🐱 Неко</option>
                 <option value="cats">🐈 Котики</option>
-                <option value="photos">🏞️ Природа / фото</option>
+                <option value="photos">🏞️ Случайные фото</option>
+                <option value="bears">🐻 Мишки</option>
+                <option value="custom">🎨 Свой источник</option>
               </select>
+            </div>
+            <label class="field-label" for="customImageUrls" style="margin-top:8px;">Свои адреса картинок</label>
+            <textarea id="customImageUrls" rows="4" class="color-input"
+              style="width:100%;box-sizing:border-box;font-family:monospace;font-size:12px;resize:vertical;"
+              placeholder="https://cataas.com/cat?_={random}&#10;https://loremflickr.com/600/400?_={random}"></textarea>
+            <div style="font-size:11px;line-height:1.4;color:var(--text-secondary,#6b7280);margin-top:4px;">
+              Используется при выборе категории «🎨 Свой источник».<br>
+              • По одному адресу в строке.<br>
+              • Адрес должен возвращать <b>саму картинку</b> (откройте его в браузере — должно показать изображение, а не текст или JSON).<br>
+              • Подставьте <code>{random}</code>, чтобы каждый раз грузилась новая картинка (обход кэша).<br>
+              • Работают только <code>http(s)</code> адреса, доступные из вашей сети.
             </div>
           </div>
         </div>
